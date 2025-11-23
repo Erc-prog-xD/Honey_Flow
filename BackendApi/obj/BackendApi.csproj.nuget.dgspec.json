@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\erica\\faculdade\\Honey_Flow\\BackendAPI\\BackendApi.csproj": {}
+    "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\erica\\faculdade\\Honey_Flow\\BackendAPI\\BackendApi.csproj": {
+    "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\erica\\faculdade\\Honey_Flow\\BackendAPI\\BackendApi.csproj",
+        "projectUniqueName": "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj",
         "projectName": "BackendApi",
-        "projectPath": "C:\\Users\\erica\\faculdade\\Honey_Flow\\BackendAPI\\BackendApi.csproj",
+        "projectPath": "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj",
         "packagesPath": "C:\\Users\\erica\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\erica\\faculdade\\Honey_Flow\\BackendAPI\\obj\\",
+        "outputPath": "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -51,6 +51,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[9.0.10, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.0, )"
@@ -65,9 +69,21 @@
               "target": "Package",
               "version": "[9.0.0, )"
             },
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[8.14.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[10.0.1, )"
+              "version": "[9.0.6, )"
+            },
+            "Swashbuckle.AspNetCore.Filters": {
+              "target": "Package",
+              "version": "[9.0.1, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.14.0, )"
             }
           },
           "imports": [
