@@ -10,7 +10,17 @@ namespace BackendApi.Data
         {
             
         }
-        public DbSet<User> User { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Apiario> Apiarios {get; set;}
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // 🔹 Diz ao EF que Endereco faz parte de Agendamento
+            modelBuilder.Entity<Apiario>().OwnsOne(a => a.Localizacao);
+
+        }
 
     }
 }

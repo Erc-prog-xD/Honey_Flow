@@ -62,7 +62,7 @@ namespace BackendApi.Services.AuthService
 
             try
                 {
-                    var User = await _context.User.FirstOrDefaultAsync(User => User.Email == userLogin.Email && User.DeletionDate == null);
+                    var User = await _context.Users.FirstOrDefaultAsync(User => User.Email == userLogin.Email && User.DeletionDate == null);
                     if (User == null)
                     {
                         response.Status = false;
@@ -95,7 +95,7 @@ namespace BackendApi.Services.AuthService
 
           public bool VerificaCpfJaExiste(UserCriacaoDTO userRegister)
         {
-            var user = _context.User.FirstOrDefault(User => User.Cpf == userRegister.Cpf || User.Email == userRegister.Email);
+            var user = _context.Users.FirstOrDefault(User => User.Cpf == userRegister.Cpf || User.Email == userRegister.Email);
             return user == null ? true : false;
         }
     }
