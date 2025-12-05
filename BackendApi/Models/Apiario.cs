@@ -1,5 +1,5 @@
-
 using BackendApi.Enums;
+
 namespace BackendApi.Models
 {
     public class Apiario

@@ -6,6 +6,5 @@ namespace BackendApi.Services.ApiarioService
     {
         Task<Response<string>> CriarApiario(ApiarioCreateDTO dto, int userId);
         Task<List<Apiario>> BuscarApiariosDoUsuario(int userId);
-        // Aqui você pode adicionar mais métodos (Delete, Update etc.)
     }
 }
