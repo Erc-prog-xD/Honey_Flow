@@ -8,7 +8,7 @@ services:
       - "8080:80"
     depends_on:
         sqlserver:
-         condition: service_started
+         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
@@ -22,8 +22,8 @@ services:
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
-    # healthcheck:               
-      # test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "HoneyFlor@123", "-Q", "SELECT 1", "-C"]
-      # interval: 10s
-      # timeout: 5s
-      # retries: 5
+    healthcheck:               
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "HoneyFlor@123", "-Q", "SELECT 1", "-C"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
