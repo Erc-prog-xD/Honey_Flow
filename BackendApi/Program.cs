@@ -27,6 +27,19 @@ builder.Services.AddScoped<ISenhaInterface, SenhaService>();
 builder.Services.AddScoped<IApiarioService, ApiarioService>();
 
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowFrontend",
+        builder =>
+        {
+            // Permite requisições de localhost na porta do seu frontend Vite
+            builder.WithOrigins("http://localhost:5173") 
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
+
 // -----------------------------------------------------------------------------
 // Banco de dados
 // -----------------------------------------------------------------------------
@@ -83,6 +96,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // -----------------------------------------------------------------------------
 var app = builder.Build();
 
+// -----------------------------------------------------------------------------
+// Aplicar migrations automaticamente
+// -----------------------------------------------------------------------------
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -90,6 +112,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication(); // Primeiro autentica
 app.UseAuthorization();  // Depois autoriza

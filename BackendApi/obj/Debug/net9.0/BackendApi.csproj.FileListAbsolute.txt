@@ -158,4 +158,3 @@ C:\Users\erica\faculdade\honey_flow\backendAPI\obj\Debug\net9.0\refint\BackendAp
 C:\Users\erica\faculdade\honey_flow\backendAPI\obj\Debug\net9.0\BackendApi.pdb
 C:\Users\erica\faculdade\honey_flow\backendAPI\obj\Debug\net9.0\BackendApi.genruntimeconfig.cache
 C:\Users\erica\faculdade\honey_flow\backendAPI\obj\Debug\net9.0\ref\BackendApi.dll
-C:\Users\erica\faculdade\Honey_Flow\BackendApi\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
