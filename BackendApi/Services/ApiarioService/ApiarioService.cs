@@ -1,5 +1,5 @@
 using BackendApi.Data;
-using BackendApi.Dto;
+using BackendApi.Dto.ApiarioDTO;
 using BackendApi.Models;
 using Microsoft.EntityFrameworkCore;
 

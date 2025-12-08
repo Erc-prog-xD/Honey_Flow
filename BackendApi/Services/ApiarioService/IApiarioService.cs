@@ -1,3 +1,4 @@
+using BackendApi.Dto.ApiarioDTO;
 using BackendApi.Models;
 
 namespace BackendApi.Services.ApiarioService

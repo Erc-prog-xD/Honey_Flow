@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, CreditCard } from 'lucide-react';
+import { Mail, Lock, User, CreditCard, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import '../assets/css/Login.css';
 import logoBee from '../assets/img/logo_hf.svg';
@@ -16,17 +16,21 @@ const Input = ({ icon: Icon, prefix, ...props }) => {
 };
 
 const Login = () => {
+  const API_BASE_URL = 'http://localhost:8080';
   const [isLogin, setIsLogin] = useState(true);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(false); // Novo estado de carregamento
 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
+  const [registerCelular, setCelular] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [registerLoading, setRegisterLoading] = useState(false); // Novo estado de carregamento para o Register
 
   const showToast = (message, type) => {
     setToast({ message, type });
@@ -44,28 +48,116 @@ const Login = () => {
     setCpf(formatCPF(e.target.value));
   };
 
-  const handleLoginSubmit = (e) => {
+  // --- Função de Login Atualizada ---
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    console.log('login', { loginEmail, loginPassword });
-    showToast('Login realizado com sucesso!', 'success');
+    setLoading(true);
+
+    const loginData = {
+      email: loginEmail,
+      password: loginPassword,
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Auth/Login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      if (response.ok) {
+        // Assume que a API retorna um JSON com o token ou dados do usuário
+        const data = await response.json();
+        console.log('Login successful', data);
+        
+        // Exemplo: Salvar token no Local Storage
+        // localStorage.setItem('authToken', data.token); 
+        
+        showToast('Login realizado com sucesso!', 'success');
+        // Redirecionar para o dashboard, por exemplo
+        // history.push('/dashboard'); 
+
+      } else {
+        // Tratar erros (ex: credenciais inválidas)
+        const errorData = await response.json();
+        console.error('Login failed', errorData);
+
+        // Exibir mensagem de erro da API ou uma mensagem genérica
+        showToast(errorData.message || 'Credenciais inválidas ou erro no servidor.', 'error');
+      }
+    } catch (error) {
+      console.error('Network or CORS error:', error);
+      showToast('Erro de conexão. Verifique o servidor da API.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegisterSubmit = (e) => {
+ // --- Função de Registro Atualizada ---
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
+    setRegisterLoading(true);
 
     if (registerPassword !== confirmPassword) {
       showToast('As senhas não coincidem.', 'error');
+      setRegisterLoading(false);
       return;
     }
 
     const cpfDigits = cpf.replace(/\D/g, '');
     if (cpfDigits.length !== 11) {
       showToast('CPF inválido. Digite os 11 dígitos.', 'warning');
+      setRegisterLoading(false);
       return;
     }
 
-    console.log('register', { name, cpf, registerEmail, registerPassword });
-    showToast('Cadastro realizado com sucesso!', 'success');
+    // Dados que serão enviados para o endpoint de registro (ajuste conforme o DTO da sua API)
+    const registerData = {
+      Nome: name,
+      Cpf: cpfDigits, // Enviar apenas os dígitos do CPF
+      Email: registerEmail,
+      Celular: registerCelular,
+      Password: registerPassword,
+      // Se sua API exigir confirmação de senha no DTO, adicione aqui
+      // confirmPassword: confirmPassword 
+    };
+    
+    // Assumindo a rota /api/Auth/Register para o cadastro
+    const REGISTER_URL = `${API_BASE_URL}/api/Auth/Register`; 
+
+    try {
+      const response = await fetch(REGISTER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registerData),
+      });
+
+      if (response.ok) {
+        // Assume que a API retorna sucesso no cadastro
+        const data = await response.json();
+        console.log('Registration successful', data);
+        
+        showToast('Cadastro realizado com sucesso! Faça login para continuar.', 'success');
+        
+        // Opcional: Mudar para a aba de login após o sucesso
+        setIsLogin(true); 
+
+      } else {
+        // Tratar erros de validação (ex: email já em uso)
+        const errorData = await response.json();
+        console.error('Registration failed', errorData);
+        showToast(errorData.message || 'Falha no cadastro. Verifique os dados.', 'error');
+      }
+    } catch (error) {
+      console.error('Network or CORS error:', error);
+      showToast('Erro de conexão. Verifique o servidor da API.', 'error');
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
   return (
@@ -119,8 +211,8 @@ const Login = () => {
                 </Link>
               </div>
 
-              <button type="submit" className="submit-btn">
-                Entrar
+              <button type="submit" className="submit-btn" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
               </button>
             </form>
           ) : (
@@ -151,6 +243,14 @@ const Login = () => {
                 onChange={(e) => setRegisterEmail(e.target.value)}
                 required
               />
+               <Input
+                type="celular"
+                placeholder="Celular"
+                icon={Phone}
+                value={registerCelular}
+                onChange={(e) => setCelular(e.target.value)}
+                required
+              />
               <Input
                 type="password"
                 placeholder="Senha"
@@ -168,8 +268,8 @@ const Login = () => {
                 required
               />
 
-              <button type="submit" className="submit-btn">
-                Criar conta
+             <button type="submit" className="submit-btn" disabled={registerLoading}>
+                {registerLoading ? 'Criando...' : 'Criar conta'}
               </button>
             </form>
           )}
