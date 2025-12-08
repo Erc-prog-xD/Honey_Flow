@@ -15,25 +15,37 @@ namespace BackendApi.Services.ProducaoService
             _context = context;
         }
 
-       public async Task<Response<string>> RegistrarProducaoDeMel(ProducaoRegisterDTO dto, int apiarioId)
+       public async Task<Response<string>> RegistrarProducaoDeMel(ProducaoRegisterDTO dto, int apiarioId, int userId)
         {
             var response = new Response<string>();
 
             try
             {
-                var apiario = await _context.Apiario.FirstOrDefaultAsync(u => u.Id == apiarioId);
+                var apiarioExiste = await _context.Apiarios.AnyAsync(u => u.Id == apiarioId);
+                var userExiste = await _context.Users.AnyAsync(u => u.Id == userId);
 
-                if (apiario == null)
-                {
+                if (!apiarioExiste){
                     response.Status = false;
                     response.Mensage = "Apiário não encontrado.";
                     return response;
                 }
 
+                if (!userExiste){
+                    response.Status = false;
+                    response.Mensage = "Usuário não encontrado.";
+                    return response;
+                }
+
+                if (dto.VolumeTotal < 0){
+                    response.Status = false;
+                    response.Mensage = "O volume inválido.";
+                    return response;
+                }
+
                 var producao = new Producao
                 {
-                    Apiario = apiario,
-                    User = dto.User,
+                    ApiarioId = apiarioId,
+                    UserId = userId,
                     Data = dto.Data,
                     VolumeTotal = dto.VolumeTotal,
                     CreationDate = DateTime.Now
@@ -56,8 +68,7 @@ namespace BackendApi.Services.ProducaoService
             return response;
         }
 
-        public async Task<List<Producao>> BuscarProducoesDoApiario(int apiarioId)
-        {
+        public async Task<List<Producao>> BuscarProducoesDoApiario(int apiarioId){
             return await _context.Producoes
                 .Where(a => a.Apiario.Id == apiarioId && a.DeletionDate == null)
                 .ToListAsync();

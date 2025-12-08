@@ -21,18 +21,23 @@ namespace BackendApi.Services.VendaMelService
 
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                var userExiste = await _context.Users.AnyAsync(u => u.Id == userId);
 
-                if (user == null)
-                {
+                if (!userExiste){
                     response.Status = false;
                     response.Mensage = "Usuário não encontrado.";
                     return response;
                 }
 
+                if (dto.Volume < 0 || dto.ValorTotal < 0){
+                    response.Status = false;
+                    response.Mensage = "O volume ou valor total da venda inválidos.";
+                    return response;
+                }
+
                 var vendaMel = new VendaMel
                 {
-                    User = user,
+                    UserId = userId,
                     Data = dto.Data,
                     Volume = dto.Volume,
                     ValorTotal = dto.ValorTotal,

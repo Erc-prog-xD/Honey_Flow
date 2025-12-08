@@ -3,7 +3,6 @@ using BackendApi.Models;
 
 public class ColmeiaCreateDTO
 {   
-    public required Apiario Apiario { get; set; }
     public required DateOnly AnoColmeia { get; set; }
     public DateOnly? AnoRainha { get; set; }
     public StatusAtividadeEnum Status { get; set; }

@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace BackendApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/apiario/{apiarioID}/[controller]")]
     [ApiController]
+    [Authorize]
     public class ColmeiaController : ControllerBase
     {
         private readonly IColmeiaService _colmeiaInterface;
@@ -16,17 +17,25 @@ namespace BackendApi.Controllers
         }
 
         [HttpPost("CriarColmeia")]
-        public async Task<ActionResult> CriarColmeia(ColmeiaCreateDTO dto, int apiarioId)
+        public async Task<ActionResult> CriarColmeia([FromRoute] int apiarioId, [FromBody] ColmeiaCreateDTO dto)
         {
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState); 
+            }
+
             var response = await _colmeiaInterface.CriarColmeia(dto, apiarioId);
-            return Ok(response);
+            return response.Status ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet("BuscarColmeiasDoApiario")]
-        public async Task<ActionResult> BuscarColmeiasDoApiario(int apiarioId)
+        public async Task<ActionResult> BuscarColmeiasDoApiario([FromRoute] int apiarioId)
         {
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState); 
+            }
+
             var response = await _colmeiaInterface.BuscarColmeiasDoApiario(apiarioId);
-            return Ok(response);
+            return response.Status ? Ok(response) : BadRequest(response);
         }
 
     }

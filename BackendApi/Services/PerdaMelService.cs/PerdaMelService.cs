@@ -21,18 +21,23 @@ namespace BackendApi.Services.PerdaMelService
 
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                var userExiste = await _context.Users.AnyAsync(u => u.Id == userId);
 
-                if (user == null)
-                {
+                if (!userExiste){
                     response.Status = false;
                     response.Mensage = "Usuário não encontrado.";
                     return response;
                 }
 
+                if (dto.Volume < 0){
+                    response.Status = false;
+                    response.Mensage = "O volume inválido.";
+                    return response;
+                }
+
                 var perdaMel = new PerdaMel
                 {
-                    User = user,
+                    UserId = userId,
                     Volume = dto.Volume,
                     Data = dto.Data,
                     CreationDate = DateTime.Now

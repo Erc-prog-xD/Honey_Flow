@@ -21,10 +21,9 @@ namespace BackendApi.Services.ColmeiaService
 
             try
             {
-                var apiario = await _context.Apiarios.FirstOrDefaultAsync(u => u.Id == apiarioId);
-
-                if (apiario == null)
-                {
+                var apiarioExiste = await _context.Apiarios.AnyAsync(u => u.Id == apiarioId);
+                
+                if (!apiarioExiste){
                     response.Status = false;
                     response.Mensage = "Apiario não encontrado.";
                     return response;
@@ -32,7 +31,7 @@ namespace BackendApi.Services.ColmeiaService
 
                 var colmeia = new Colmeia
                 {
-                    Apiario = apiario,
+                    ApiarioId = apiarioId,
                     AnoColmeia = dto.AnoColmeia,
                     AnoRainha = dto.AnoRainha,
                     Status = dto.Status,
