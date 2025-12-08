@@ -5,7 +5,6 @@ import '../assets/css/Login.css';
 import logoBee from '../assets/img/logo_hf.svg';
 import ToastCenter from '../components/Toast';
 
-// --- Componente Input ---
 const Input = ({ icon: Icon, prefix, ...props }) => {
   return (
     <div className="input-wrapper">
@@ -20,11 +19,9 @@ const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [toast, setToast] = useState(null);
 
-  // Login state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // Register state
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
@@ -75,12 +72,10 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
 
-        {/* Lado Esquerdo - Amarelo */}
         <div className="left-panel">
           <img src={logoBee} alt="Bee Logo" className="bee-logo" />
         </div>
 
-        {/* Lado Direito - Branco */}
         <div className="right-panel">
           <h1>Bem-vindo</h1>
 
@@ -99,7 +94,6 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Formulário de Login */}
           {isLogin ? (
             <form className="login-form" onSubmit={handleLoginSubmit}>
               <Input
@@ -130,7 +124,8 @@ const Login = () => {
               </button>
             </form>
           ) : (
-            /* Formulário de Cadastro */
+
+            //Cadastro
             <form className="login-form" onSubmit={handleRegisterSubmit}>
               <Input
                 type="text"
@@ -181,7 +176,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Toast Notification */}
+      {/* Toasts */}
       {toast && (
         <div className="toast-center-container">
           <ToastCenter
