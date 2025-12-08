@@ -1,3 +1,4 @@
+using BackendApi.Dto.ApiarioDTO;
 using BackendApi.Services.ApiarioService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

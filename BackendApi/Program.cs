@@ -1,6 +1,7 @@
 using BackendApi.Data;
 using BackendApi.Services.ApiarioService;
 using BackendApi.Services.AuthService;
+using BackendApi.Services.ColmeiaService;
 using BackendApi.Services.SenhaService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthInterface, AuthService>();
 builder.Services.AddScoped<ISenhaInterface, SenhaService>();
 builder.Services.AddScoped<IApiarioService, ApiarioService>();
+builder.Services.AddScoped<IColmeiaService, ColmeiaService>();
 
 
 

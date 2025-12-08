@@ -12,6 +12,8 @@ namespace BackendApi.Data
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Apiario> Apiarios {get; set;}
+        public DbSet<Colmeia> Colmeias { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
