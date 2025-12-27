@@ -47,6 +47,18 @@ namespace BackendApi.Services.ApiarioService
                 _context.Apiarios.Add(apiario);
                 await _context.SaveChangesAsync();
 
+                // Agora cria a Producao vinculada ao Apiario recém-criado
+                var producao = new ProducaoApiario
+                {
+                    Apiario = apiario,
+                    TotalProduzidoKg = 0m,
+                    EstoqueAtualKg = 0m,
+                    CreationDate = DateTime.Now
+                };
+
+                _context.ProducaoApiarios.Add(producao);
+                await _context.SaveChangesAsync();
+
                 response.Dados = null;
                 response.Mensage = "Operação realizada com sucesso.";
                 response.Status = true;

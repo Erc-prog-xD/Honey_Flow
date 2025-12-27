@@ -13,7 +13,8 @@ namespace BackendApi.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Apiario> Apiarios {get; set;}
         public DbSet<Colmeia> Colmeias { get; set; }
-
+        public DbSet<ProducaoApiario> ProducaoApiarios {get; set;}
+        public DbSet<MovimentoMel> MovimentacaoMel {get; set;}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +23,22 @@ namespace BackendApi.Data
             // 🔹 Diz ao EF que Endereco faz parte de Agendamento
             modelBuilder.Entity<Apiario>().OwnsOne(a => a.Localizacao);
 
+            modelBuilder.Entity<MovimentoMel>()
+                .Property(x => x.QuantidadeKg)
+                .HasPrecision(18, 3); // até 999 trilhões, com 3 casas decimais (kg)
+
+            modelBuilder.Entity<ProducaoApiario>()
+                .Property(x => x.TotalProduzidoKg)
+                .HasPrecision(18, 3);
+
+             modelBuilder.Entity<ProducaoApiario>()
+                .Property(x => x.EstoqueAtualKg)
+                .HasPrecision(18, 3);
+            
+              // Se você tiver Valor (dinheiro):
+            modelBuilder.Entity<MovimentoMel>()
+                .Property(x => x.Valor)
+                .HasPrecision(18, 2); // dinheiro normalmente 2 casas
         }
 
     }
