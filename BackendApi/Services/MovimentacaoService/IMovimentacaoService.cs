@@ -3,5 +3,5 @@ using BackendApi.Models;
 
 public interface IMovimentacaoService
 {
-    Task<Response<string>> CriarMovimentacao(int apiarioId, MovimentacaoCreateDTO dto);
+    Task<Response<string>> CriarMovimentacao(int userId, int apiarioId, MovimentacaoCreateDTO dto);
 }

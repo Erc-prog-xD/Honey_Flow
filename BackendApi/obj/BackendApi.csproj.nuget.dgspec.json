@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj": {}
+    "C:\\Users\\erica\\faculdade\\honey_flow\\BackendApi\\BackendApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj": {
+    "C:\\Users\\erica\\faculdade\\honey_flow\\BackendApi\\BackendApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj",
+        "projectUniqueName": "C:\\Users\\erica\\faculdade\\honey_flow\\BackendApi\\BackendApi.csproj",
         "projectName": "BackendApi",
-        "projectPath": "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\BackendApi.csproj",
+        "projectPath": "C:\\Users\\erica\\faculdade\\honey_flow\\BackendApi\\BackendApi.csproj",
         "packagesPath": "C:\\Users\\erica\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\erica\\faculdade\\honey_flow\\backendapi\\obj\\",
+        "outputPath": "C:\\Users\\erica\\faculdade\\honey_flow\\BackendApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\erica\\AppData\\Roaming\\NuGet\\NuGet.Config"

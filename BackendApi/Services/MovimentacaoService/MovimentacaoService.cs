@@ -15,15 +15,15 @@ namespace BackendApi.Services.MovimentacaoService
             _context = context;
         }
 
-        public async Task<Response<string>> CriarMovimentacao(int apiarioId, MovimentacaoCreateDTO dto)
+        public async Task<Response<string>> CriarMovimentacao(int userId, int apiarioId, MovimentacaoCreateDTO dto)
         {
             var response = new Response<string>();
 
             try
             {
-                // 1) Validar apiário e dono
+                // 1) Validar apiário e o userId que está logado.
                 var apiario = await _context.Apiarios
-                    .FirstOrDefaultAsync(a => a.Id == apiarioId && a.DeletionDate == null);
+                    .FirstOrDefaultAsync(a => a.Id == apiarioId && a.User.Id == userId && a.DeletionDate == null);
 
                 if (apiario == null)
                 {
@@ -39,6 +39,29 @@ namespace BackendApi.Services.MovimentacaoService
                     return response;
                 }
 
+                var colmeia = await _context.Colmeias.Include(c => c.Apiario).FirstOrDefaultAsync(c => c.Apiario.Id == apiario.Id && c.Id == dto.ColmeiaId && c.DeletionDate == null);
+
+                if(dto.Tipo == TipoMovimentoMelEnum.Colheita && colmeia == null)
+                {
+                    response.Status = false;
+                    response.Mensage = "Não existe colmeia no apiario para a colheita, não tem como haver movimentação";
+                    return response;
+                }
+                
+                if(dto.Tipo == TipoMovimentoMelEnum.Colheita && colmeia?.Status == StatusAtividadeEnum.Desativada)
+                {
+                    response.Status = false;
+                    response.Mensage = "A colmeia está desativada";
+                    return response;
+                }
+
+                if(dto.Tipo != TipoMovimentoMelEnum.Colheita && dto.ColmeiaId != null)
+                {
+                    response.Status = false;
+                    response.Mensage = "Não sendo colheita não é preciso colocar o 'ColmeiaId' ";
+                    return response;
+                }
+
                 // 2) Buscar produção consolidada do apiário
                 var producao = await _context.ProducaoApiarios
                     .FirstOrDefaultAsync(p => p.Apiario.Id == apiarioId && p.DeletionDate == null);
@@ -51,26 +74,39 @@ namespace BackendApi.Services.MovimentacaoService
                 }
 
                 // (Opcional) regra de valor: se for venda, valor não pode ser negativo
-                if (dto.Valor < 0)
+                if (dto.Tipo == TipoMovimentoMelEnum.Venda && dto.Valor <= 0)
                 {
                     response.Status = false;
-                    response.Mensage = "O valor não pode ser negativo.";
+                    response.Mensage = "Para venda, o valor deve ser maior que zero.";
                     return response;
                 }
 
-                // Saídas: validar estoque
-                var isEntrada = dto.Tipo == TipoMovimentoMelEnum.Colheita;
-                if (!isEntrada && producao.EstoqueAtualKg < dto.QuantidadeKg)
+                // Ao colher quer dizer que eu retirei mel da comeia e vou colocar na minha produção do meu apiario
+                // se houver 0 na colheita quer dizer que não é necessário anotar a movimentação
+                if (dto.Tipo == TipoMovimentoMelEnum.Colheita && dto.QuantidadeKg < 0)
                 {
                     response.Status = false;
-                    response.Mensage = $"Estoque insuficiente. Estoque atual: {producao.EstoqueAtualKg} Kg.";
+                    response.Mensage = $"Colheita com quantidadeKg meno ou igual a zero não precisa ser movimentado";
+                    return response;
+                }
+                if(dto.Tipo != TipoMovimentoMelEnum.Colheita && dto.QuantidadeKg > producao.EstoqueAtualKg)
+                {
+                    response.Status = false;
+                    response.Mensage = "O estoque atual não contém quantidade de Kg suficiente para realizar a venda, perda ou doação";
                     return response;
                 }
 
-                if(isEntrada && dto.Valor > 0)
+                if(dto.Tipo == TipoMovimentoMelEnum.Colheita && dto.Valor > 0)
                 {
                     response.Status = false;
                     response.Mensage = "A colheita não aceita o campo valor pois esta apenas colhendo!";
+                    return response;
+                }
+
+                if((dto.Tipo == TipoMovimentoMelEnum.Perda || dto.Tipo == TipoMovimentoMelEnum.Doacao) && dto.Valor > 0)
+                {
+                    response.Status = false;
+                    response.Mensage = "Perdas e doações não necessitam de valor";
                     return response;
                 }
 
@@ -79,6 +115,7 @@ namespace BackendApi.Services.MovimentacaoService
                     Apiario = apiario,
                     Tipo = dto.Tipo,
                     QuantidadeKg = dto.QuantidadeKg,
+                    RetiradoDaColmeia = colmeia,
                     Valor = dto.Valor,
                     Data = dto.Data,
                     Observacao = dto.Observacao,
@@ -87,11 +124,16 @@ namespace BackendApi.Services.MovimentacaoService
 
                 _context.MovimentacaoMel.Add(movimento);
 
-                       // Atualiza consolidado
+                // Atualiza consolidado
                 if (dto.Tipo == TipoMovimentoMelEnum.Colheita)
                 {
                     producao.TotalProduzidoKg += dto.QuantidadeKg;
                     producao.EstoqueAtualKg += dto.QuantidadeKg;
+                }
+                else if(dto.Tipo == TipoMovimentoMelEnum.Venda)
+                {
+                    producao.EstoqueAtualKg -= dto.QuantidadeKg;
+                    producao.TotalVendido += dto.Valor;
                 }
                 else
                 {

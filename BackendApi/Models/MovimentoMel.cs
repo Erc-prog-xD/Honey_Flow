@@ -8,8 +8,9 @@ namespace BackendApi.Models
         public int Id { get; set; }
         public required Apiario Apiario { get; set; }
         public TipoMovimentoMelEnum Tipo { get; set; }
+        public Colmeia? RetiradoDaColmeia {get; set;}
         public decimal QuantidadeKg { get; set; }
-        public double Valor {get; set;}
+        public decimal Valor {get; set;}
         public DateOnly Data { get; set; }
         public string? Motivo { get; set; } // ex: "Colheita", "Venda", "Perda"
         public string? Observacao { get; set; }

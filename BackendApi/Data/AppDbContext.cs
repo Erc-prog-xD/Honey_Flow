@@ -32,6 +32,10 @@ namespace BackendApi.Data
                 .HasPrecision(18, 3);
 
              modelBuilder.Entity<ProducaoApiario>()
+                .Property(x => x.TotalVendido)
+                .HasPrecision(18, 2);
+
+             modelBuilder.Entity<ProducaoApiario>()
                 .Property(x => x.EstoqueAtualKg)
                 .HasPrecision(18, 3);
             
