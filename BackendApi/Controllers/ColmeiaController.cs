@@ -20,8 +20,8 @@ namespace BackendApi.Controllers
         [HttpPost("CriarColmeia")]
         public async Task<ActionResult> CriarColmeia(ColmeiaCreateDTO dto)
         {
-
-            var response = await _colmeiaInterface.CriarColmeia(dto);
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var response = await _colmeiaInterface.CriarColmeia(userId ,dto);
             return Ok(response);
         }
 

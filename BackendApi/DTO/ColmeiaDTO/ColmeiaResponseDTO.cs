@@ -7,7 +7,7 @@ public class ColmeiaResponseDTO
 {   
     public int Id { get; set; }
     public required int ApiarioId { get; set; }
-    public required DateOnly AnoColmeia { get; set; }
+    public required int AnoColmeia { get; set; }
     public DateOnly? AnoRainha { get; set; }
     public StatusAtividadeEnum Status { get; set; }
     public DateTime CreationDate {get; set;}
