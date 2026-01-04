@@ -33,7 +33,7 @@ namespace BackendApi.Controllers
         // ----------------------------
         // Buscar Apiários do Usuário
         // ----------------------------
-        [HttpGet("BuscarApiarios")]
+        [HttpGet("BuscarApiariosUserLogado")]
         public async Task<IActionResult> BuscarApiarios()
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);

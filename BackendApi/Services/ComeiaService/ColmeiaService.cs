@@ -14,13 +14,13 @@ namespace BackendApi.Services.ColmeiaService
             _context = context;
         }
 
-       public async Task<Response<string>> CriarColmeia(ColmeiaCreateDTO dto)
+       public async Task<Response<string>> CriarColmeia(int userId, ColmeiaCreateDTO dto)
         {
             var response = new Response<string>();
 
             try
             {
-                var apiario = await _context.Apiarios.FirstOrDefaultAsync(u => u.Id == dto.ApiarioId);
+                var apiario = await _context.Apiarios.FirstOrDefaultAsync(u => u.Id == dto.ApiarioId && u.User.Id == userId && u.DeletionDate == null);
 
                 if (apiario == null)
                 {

@@ -2,6 +2,8 @@ using BackendApi.Data;
 using BackendApi.Services.ApiarioService;
 using BackendApi.Services.AuthService;
 using BackendApi.Services.ColmeiaService;
+using BackendApi.Services.MovimentacaoService;
+using BackendApi.Services.ProducaoService;
 using BackendApi.Services.SenhaService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +29,8 @@ builder.Services.AddScoped<IAuthInterface, AuthService>();
 builder.Services.AddScoped<ISenhaInterface, SenhaService>();
 builder.Services.AddScoped<IApiarioService, ApiarioService>();
 builder.Services.AddScoped<IColmeiaService, ColmeiaService>();
-
+//builder.Services.AddScoped<IProducaoService>();
+builder.Services.AddScoped<IMovimentacaoService, MovimentacaoService>();
 
 
 builder.Services.AddCors(options =>
