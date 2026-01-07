@@ -7,6 +7,7 @@ namespace BackendApi.Services.ApiarioService
     {
         Task<Response<string>> CriarApiario(ApiarioCreateDTO dto, int userId);
         Task<List<Apiario>> BuscarApiariosDoUsuario(int userId);
-        // Aqui você pode adicionar mais métodos (Delete, Update etc.)
+        Task<Response<bool>> EditarApiario(int userId, ColmeiaUpdateDTO dto);
+        Task<Response<bool>> DeletarApiario(int userId, int apiarioId);        
     }
 }

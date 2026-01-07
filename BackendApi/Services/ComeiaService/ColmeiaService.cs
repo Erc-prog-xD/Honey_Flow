@@ -99,5 +99,110 @@ namespace BackendApi.Services.ColmeiaService
             }
             return response;
         }
+
+
+        /*
+            Eu coloquei id aqui, só para garantir que nenhuma ação de CRUD posssa ser feita por um usuário que está logado, mas 
+            que não seja dono do apiário onde a colmeia está. Se for demais basta tirar. Creio eu que não haja muitos problemas nisso não!
+
+            Caso as informação de em qual apiário a colmeia está poderem ser mudadas, precisasse garantir que o apiário para onde a colmeia será transferida
+            produza o mesmo tipo de mel que a colmeia atualmente produz (aparentemente ela não pode ser mudada de apiário, mas nunca se sabe).
+        */
+
+        public async Task<Response<ColmeiaResponseDTO>> EditarColmeia(int userId, ColmeiaUpdateDTO dto){
+            var response = new Response<ColmeiaResponseDTO>();
+
+            try{
+                var colmeia = await _context.Colmeias
+                    .Include(c => c.Apiario)
+                    .FirstOrDefaultAsync(u => 
+                        u.Id == dto.Id && 
+                        u.Apiario.Id == dto.ApiarioId && 
+                        u.Apiario.User.Id == userId &&
+                        u.DeletionDate == null
+                    );
+                
+                if (colmeia == null){
+                    response.Status = false;
+                    response.Mensage = "Colmeia não encontrado ou acesso negado.";
+                    return response;
+                }
+
+                colmeia.AnoRainha = dto.AnoRainha ?? colmeia.AnoRainha;
+                colmeia.Status = dto.Status ?? colmeia.Status;
+
+                _context.Colmeias.Update(colmeia);
+                await _context.SaveChangesAsync();
+
+                response.Status = true;
+                response.Mensage = "Colmeia atualizada com sucesso!";
+                response.Dados = new ColmeiaResponseDTO
+                {
+                    Id = colmeia.Id,
+                    ApiarioId = colmeia.Apiario.Id,
+                    AnoColmeia = colmeia.AnoColmeia,
+                    AnoRainha = colmeia.AnoRainha,
+                    Status = colmeia.Status,
+                    CreationDate = colmeia.CreationDate,
+                    DeletionDate = colmeia.DeletionDate
+                };
+
+            }catch (Exception ex){
+                response.Status = false;
+                response.Mensage = "Erro ao editar colmeia: " + ex.Message;
+                response.Dados = null; 
+            }
+
+            return response;
+        }
+
+        /*
+            Aqui foi feito apenas um "Soft Delete", pois a row da coolmeia ainda está no banco de dados.
+            O que está sendo alterado é a data de deleção da colmeia, que saí de um null para a data (now) da operação.
+
+            Ponto importante sobre o status da colmeia: embora esteja sendo alterada para 0 (desativada), acho suspeito fazer assim.
+            Não necessáriamente porque uma colmeia foi "deletada", ela parou de produzir e está desativada (ela pode apenas ter sido deletada mesmo
+            e estar lá com abelhas "abelhando" a sua volta).
+            MAS isso é mais uma questão de lógica de negócio do que qualuqer outra coisa.  
+        */
+
+        public async Task<Response<bool>> DeletarColmeia(int userId, int colmeiaId){
+            var response = new Response<bool>();
+
+            try
+            {
+                var colmeia = await _context.Colmeias
+                    .Include(c => c.Apiario)
+                    .FirstOrDefaultAsync(u => 
+                        u.Id == colmeiaId && 
+                        u.Apiario.User.Id == userId && 
+                        u.DeletionDate == null);
+
+                if (colmeia == null)
+                {
+                    response.Status = false;
+                    response.Mensage = "Colmeia não encontrada ou acesso negado.";
+                    response.Dados = false;
+                    return response;
+                }
+
+                colmeia.Status = 0;
+                colmeia.DeletionDate = DateTime.Now;
+
+                _context.Colmeias.Update(colmeia);
+                await _context.SaveChangesAsync();
+
+                response.Status = true;
+                response.Mensage = "Colmeia removida com sucesso!";
+                response.Dados = true;
+
+            }catch (Exception ex){
+                response.Status = false;
+                response.Mensage = "Erro ao deletar colmeia: " + ex.Message;
+                response.Dados = false;
+            }
+
+            return response;
+        }
     }
 }
