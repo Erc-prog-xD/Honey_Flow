@@ -25,7 +25,7 @@ namespace BackendApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("BuscarColmeiasDoApiario")]
+        [HttpGet("BuscarColmeiasDoApiario/{apiarioId}")]
         public async Task<ActionResult> BuscarColmeiasDoApiario(int apiarioId)
         {
             var response = await _colmeiaInterface.BuscarColmeiasDoApiario(apiarioId);
