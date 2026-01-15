@@ -1,3 +1,4 @@
+using Enums.StatusAtividadeEnum;
 using BackendApi.Data;
 using BackendApi.Dto.ApiarioDTO;
 using BackendApi.Models;
@@ -148,7 +149,7 @@ namespace BackendApi.Services.ApiarioService
                     return response;
                 }
 
-                apiario.Atividade = 0;
+                apiario.Atividade = StatusAtividadeEnum.Desativada;
                 apiario.DeletionDate = DateTime.Now;
 
                 var colmeiasVinculadas = await _context.Colmeias
@@ -157,7 +158,7 @@ namespace BackendApi.Services.ApiarioService
                 
                 foreach(var colmeia in colmeiasVinculadas)
                 {
-                    colmeia.Status = 0;
+                    colmeia.Status = StatusAtividadeEnum.Desativada;
                     colmeia.DeletionDate = DateTime.Now;
                 }
 

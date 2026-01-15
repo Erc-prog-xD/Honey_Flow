@@ -1,3 +1,4 @@
+using Enums.StatusAtividadeEnum;
 using BackendApi.Data;
 using BackendApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -186,12 +187,27 @@ namespace BackendApi.Services.ColmeiaService
                     return response;
                 }
 
-                colmeia.Status = 0;
+                colmeia.Status = StatusAtividadeEnum.Desativada;
                 colmeia.DeletionDate = DateTime.Now;
-
                 _context.Colmeias.Update(colmeia);
-                await _context.SaveChangesAsync();
 
+                bool existeOutraAtiva = await _context.Colmeias
+                    .AnyAsync(c => 
+                        c.Apiario.Id == colmeia.Apiario.Id 
+                        && c.Id != colmeia.Id 
+                        && c.Status == StatusAtividadeEnum.Ativo 
+                        && c.DeletionDate == null
+                    );
+
+                if (!existeOutraAtiva){
+                    colmeia.Apiario.Atividade = StatusAtividadeEnum.Desativada;
+                    colmeia.Apiario.DeletionDate = DateTime.Now;
+                    _context.Apiarios.Update(colmeia.Apiario);
+                }
+                
+                await _context.SaveChangesAsync();
+                
+    
                 response.Status = true;
                 response.Mensage = "Colmeia removida com sucesso!";
                 response.Dados = true;
