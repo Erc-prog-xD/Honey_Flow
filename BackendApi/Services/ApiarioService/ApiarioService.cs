@@ -1,4 +1,4 @@
-using Enums.StatusAtividadeEnum;
+using BackendApi.Enums;
 using BackendApi.Data;
 using BackendApi.Dto.ApiarioDTO;
 using BackendApi.Models;
@@ -66,9 +66,9 @@ namespace BackendApi.Services.ApiarioService
             }
             catch (Exception ex)
             {
-                response.Status = false;
+                response.Dados = null;
                 response.Mensage = "Erro ao criar apiário: " + ex.Message;
-                response.Dados = false;
+                response.Status = false;
             }
 
             return response;

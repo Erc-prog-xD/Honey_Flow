@@ -1,4 +1,4 @@
-using Enums.StatusAtividadeEnum;
+using BackendApi.Enums;
 using BackendApi.Data;
 using BackendApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -195,7 +195,7 @@ namespace BackendApi.Services.ColmeiaService
                     .AnyAsync(c => 
                         c.Apiario.Id == colmeia.Apiario.Id 
                         && c.Id != colmeia.Id 
-                        && c.Status == StatusAtividadeEnum.Ativo 
+                        && c.Status == StatusAtividadeEnum.Ativada 
                         && c.DeletionDate == null
                     );
 

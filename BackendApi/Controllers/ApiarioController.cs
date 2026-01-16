@@ -47,7 +47,7 @@ namespace BackendApi.Controllers
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            var response = await _apiarioService.AditarApiario(userId, dto);
+            var response = await _apiarioService.EditarApiario(userId, dto);
             return Ok(response);
         }
 
