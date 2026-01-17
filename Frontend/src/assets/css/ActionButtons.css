@@ -1,0 +1,33 @@
+.action-buttons-container {
+    display: flex;
+    overflow: hidden;
+    border-radius: var(--hf-radius-sm);
+    box-shadow: var(--hf-shadow-sm);
+}
+
+.btn-action {
+    border: none;
+    padding: 12px 30px;
+    font-weight: 600;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel-action {
+    background-color: var(--hf-primary);
+    color: var(--hf-text-main);
+}
+
+.btn-save-action {
+    background-color: var(--hf-success);
+    color: var(--hf-text-main);
+}
+
+.btn-action:hover {
+    filter: brightness(1.05);
+}
+
+.btn-action:active {
+    transform: translateY(1px);
+}
