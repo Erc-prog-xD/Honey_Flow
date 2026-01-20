@@ -32,15 +32,15 @@ namespace BackendApi.Controllers
             return Ok(response);
         }
 
-        [HttpPost("EditarColmeia")]
-        public async Task<ActionResult> EditarColmeia(ColmeiaUpdateDTO dto)
+        [HttpPut("EditarColmeia/{colmeiaId}")]
+        public async Task<ActionResult> EditarColmeia(int colmeiaId, ColmeiaUpdateDTO dto)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var response = await _colmeiaInterface.EditarColmeia(userId ,dto);
+            var response = await _colmeiaInterface.EditarColmeia(userId , colmeiaId, dto);
             return Ok(response);
         }
 
-        [HttpPost("DeletarColmeia/{colmeiaId}")]
+        [HttpDelete("DeletarColmeia/{colmeiaId}")]
         public async Task<ActionResult> DeletarColmeia(int colmeiaId)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);

@@ -110,15 +110,14 @@ namespace BackendApi.Services.ColmeiaService
             produza o mesmo tipo de mel que a colmeia atualmente produz (aparentemente ela não pode ser mudada de apiário, mas nunca se sabe).
         */
 
-        public async Task<Response<ColmeiaResponseDTO>> EditarColmeia(int userId, ColmeiaUpdateDTO dto){
-            var response = new Response<ColmeiaResponseDTO>();
+        public async Task<Response<string>> EditarColmeia(int userId, int colmeiaId, ColmeiaUpdateDTO dto){
+            var response = new Response<string>();
 
             try{
                 var colmeia = await _context.Colmeias
                     .Include(c => c.Apiario)
                     .FirstOrDefaultAsync(u => 
-                        u.Id == dto.Id && 
-                        u.Apiario.Id == dto.ApiarioId && 
+                        u.Id ==  colmeiaId && 
                         u.Apiario.User.Id == userId &&
                         u.DeletionDate == null
                     );
@@ -137,16 +136,7 @@ namespace BackendApi.Services.ColmeiaService
 
                 response.Status = true;
                 response.Mensage = "Colmeia atualizada com sucesso!";
-                response.Dados = new ColmeiaResponseDTO
-                {
-                    Id = colmeia.Id,
-                    ApiarioId = colmeia.Apiario.Id,
-                    AnoColmeia = colmeia.AnoColmeia,
-                    AnoRainha = colmeia.AnoRainha,
-                    Status = colmeia.Status,
-                    CreationDate = colmeia.CreationDate,
-                    DeletionDate = colmeia.DeletionDate
-                };
+                response.Dados = null;
 
             }catch (Exception ex){
                 response.Status = false;
@@ -167,8 +157,8 @@ namespace BackendApi.Services.ColmeiaService
             MAS isso é mais uma questão de lógica de negócio do que qualuqer outra coisa.  
         */
 
-        public async Task<Response<bool>> DeletarColmeia(int userId, int colmeiaId){
-            var response = new Response<bool>();
+        public async Task<Response<string>> DeletarColmeia(int userId, int colmeiaId){
+            var response = new Response<string>();
 
             try
             {
@@ -183,7 +173,7 @@ namespace BackendApi.Services.ColmeiaService
                 {
                     response.Status = false;
                     response.Mensage = "Colmeia não encontrada ou acesso negado.";
-                    response.Dados = false;
+                    response.Dados = null;
                     return response;
                 }
 
@@ -191,31 +181,16 @@ namespace BackendApi.Services.ColmeiaService
                 colmeia.DeletionDate = DateTime.Now;
                 _context.Colmeias.Update(colmeia);
 
-                bool existeOutraAtiva = await _context.Colmeias
-                    .AnyAsync(c => 
-                        c.Apiario.Id == colmeia.Apiario.Id 
-                        && c.Id != colmeia.Id 
-                        && c.Status == StatusAtividadeEnum.Ativada 
-                        && c.DeletionDate == null
-                    );
-
-                if (!existeOutraAtiva){
-                    colmeia.Apiario.Atividade = StatusAtividadeEnum.Desativada;
-                    colmeia.Apiario.DeletionDate = DateTime.Now;
-                    _context.Apiarios.Update(colmeia.Apiario);
-                }
-                
                 await _context.SaveChangesAsync();
                 
-    
                 response.Status = true;
                 response.Mensage = "Colmeia removida com sucesso!";
-                response.Dados = true;
+                response.Dados = null;
 
             }catch (Exception ex){
                 response.Status = false;
                 response.Mensage = "Erro ao deletar colmeia: " + ex.Message;
-                response.Dados = false;
+                response.Dados = null;
             }
 
             return response;

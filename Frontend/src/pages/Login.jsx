@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, CreditCard } from 'lucide-react';
+import { Mail, Lock, User, CreditCard, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../assets/css/Login.css';
 import logoBee from '../assets/img/logo_hf.svg';
 import ToastCenter from '../components/Toast';
+import { useEffect } from 'react';
+
 
 // --- Componente Input ---
 const Input = ({ icon: Icon, prefix, ...props }) => {
@@ -17,8 +19,11 @@ const Input = ({ icon: Icon, prefix, ...props }) => {
 };
 
 const Login = () => {
+  const API_BASE_URL = 'http://localhost:8080';
   const [isLogin, setIsLogin] = useState(true);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(false); // Novo estado de carregamento
+
 
   const navigate = useNavigate();
 
@@ -30,8 +35,11 @@ const Login = () => {
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
+  const [registerCelular, setCelular] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [registerLoading, setRegisterLoading] = useState(false); // Novo estado de carregamento para o Register
+
 
   const showToast = (message, type) => {
     setToast({ message, type });
@@ -49,30 +57,124 @@ const Login = () => {
     setCpf(formatCPF(e.target.value));
   };
 
-  const handleLoginSubmit = (e) => {
+useEffect(() => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    navigate('/dashboard');
+  }
+}, []);
+
+
+const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    console.log('login', { loginEmail, loginPassword });
-    showToast('Login realizado com sucesso!', 'success');
-    setTimeout(() => navigate('/dashboard'), 700);
+    setLoading(true);
+
+    const loginData = {
+      email: loginEmail,
+      password: loginPassword,
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/Auth/Login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      if (response.ok) {
+        // Assume que a API retorna um JSON com o token ou dados do usuário
+        const data = await response.json();
+        console.log('Login successful', data);
+
+        // 🔐 Salvar token no LocalStorage
+        localStorage.setItem('Token', data.dados);  
+        showToast('Login realizado com sucesso!', 'success');
+        // Redirecionar para o dashboard
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 800); // pequeno delay para o toast aparecer
+
+      } else {
+        // Tratar erros (ex: credenciais inválidas)
+        const errorData = await response.json();
+        console.error('Login failed', errorData);
+
+        // Exibir mensagem de erro da API ou uma mensagem genérica
+        showToast(errorData.message || 'Credenciais inválidas ou erro no servidor.', 'error');
+      }
+    } catch (error) {
+      console.error('Network or CORS error:', error);
+      showToast('Erro de conexão. Verifique o servidor da API.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
+    setRegisterLoading(true);
 
     if (registerPassword !== confirmPassword) {
       showToast('As senhas não coincidem.', 'error');
+      setRegisterLoading(false);
       return;
     }
 
     const cpfDigits = cpf.replace(/\D/g, '');
     if (cpfDigits.length !== 11) {
       showToast('CPF inválido. Digite os 11 dígitos.', 'warning');
+      setRegisterLoading(false);
       return;
     }
 
-    console.log('register', { name, cpf, registerEmail, registerPassword });
-    showToast('Cadastro realizado com sucesso!', 'success');
-    setTimeout(() => setIsLogin(true), 700);
+    // Dados que serão enviados para o endpoint de registro (ajuste conforme o DTO da sua API)
+    const registerData = {
+      Nome: name,
+      Cpf: cpfDigits, // Enviar apenas os dígitos do CPF
+      Email: registerEmail,
+      Celular: registerCelular,
+      Password: registerPassword,
+      // Se sua API exigir confirmação de senha no DTO, adicione aqui
+      // confirmPassword: confirmPassword 
+    };
+    
+    // Assumindo a rota /api/Auth/Register para o cadastro
+    const REGISTER_URL = `${API_BASE_URL}/api/Auth/Register`; 
+
+    try {
+      const response = await fetch(REGISTER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registerData),
+      });
+
+      if (response.ok) {
+        // Assume que a API retorna sucesso no cadastro
+        const data = await response.json();
+        console.log('Registration successful', data);
+        
+      
+        showToast('Cadastro realizado com sucesso! Faça login para continuar.', 'success');
+        
+        // Opcional: Mudar para a aba de login após o sucesso
+        setIsLogin(true); 
+
+      } else {
+        // Tratar erros de validação (ex: email já em uso)
+        const errorData = await response.json();
+        console.error('Registration failed', errorData);
+        showToast(errorData.message || 'Falha no cadastro. Verifique os dados.', 'error');
+      }
+    } catch (error) {
+      console.error('Network or CORS error:', error);
+      showToast('Erro de conexão. Verifique o servidor da API.', 'error');
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
   return (
@@ -129,8 +231,8 @@ const Login = () => {
                 </Link>
               </div>
 
-              <button type="submit" className="submit-btn">
-                Entrar
+              <button type="submit" className="submit-btn" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
               </button>
             </form>
           ) : (
@@ -161,6 +263,14 @@ const Login = () => {
                 required
               />
               <Input
+                type="celular"
+                placeholder="Celular"
+                icon={Phone}
+                value={registerCelular}
+                onChange={(e) => setCelular(e.target.value)}
+                required
+              />
+              <Input
                 type="password"
                 placeholder="Senha"
                 icon={Lock}
@@ -177,8 +287,8 @@ const Login = () => {
                 required
               />
 
-              <button type="submit" className="submit-btn">
-                Criar conta
+              <button type="submit" className="submit-btn" disabled={registerLoading}>
+                {registerLoading ? 'Criando...' : 'Criar conta'}
               </button>
             </form>
           )}
