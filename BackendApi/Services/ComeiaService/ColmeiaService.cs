@@ -147,15 +147,6 @@ namespace BackendApi.Services.ColmeiaService
             return response;
         }
 
-        /*
-            Aqui foi feito apenas um "Soft Delete", pois a row da coolmeia ainda está no banco de dados.
-            O que está sendo alterado é a data de deleção da colmeia, que saí de um null para a data (now) da operação.
-
-            Ponto importante sobre o status da colmeia: embora esteja sendo alterada para 0 (desativada), acho suspeito fazer assim.
-            Não necessáriamente porque uma colmeia foi "deletada", ela parou de produzir e está desativada (ela pode apenas ter sido deletada mesmo
-            e estar lá com abelhas "abelhando" a sua volta).
-            MAS isso é mais uma questão de lógica de negócio do que qualuqer outra coisa.  
-        */
 
         public async Task<Response<string>> DeletarColmeia(int userId, int colmeiaId){
             var response = new Response<string>();

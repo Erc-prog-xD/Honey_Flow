@@ -78,13 +78,39 @@ namespace BackendApi.Services.ApiarioService
         // ----------------------------
         // Buscar Apiários do Usuário
         // ----------------------------
-        public async Task<List<Apiario>> BuscarApiariosDoUsuario(int userId)
+       public async Task<Response<List<ApiarioResponseDTO>>> BuscarApiariosDoUsuario(int userId)
         {
-            return await _context.Apiarios
-                .Where(a => a.User.Id == userId && a.DeletionDate == null)
-                .ToListAsync();
-        }
+            var response = new Response<List<ApiarioResponseDTO>>();
 
+            try
+            {
+                var apiarios = await _context.Apiarios
+                    .AsNoTracking()
+                    .Where(a => a.User.Id == userId && a.DeletionDate == null)
+                    .Select(a => new ApiarioResponseDTO
+                    {
+                        Id = a.Id,
+                        UserId = a.User.Id,
+                        Localizacao = a.Localizacao,
+                        Coord_X = a.Coord_X,
+                        Coord_Y = a.Coord_Y,
+                        Bioma = a.Bioma,
+                        TipoDeAbelha = a.TipoDeAbelha,
+                        Atividade = a.Atividade
+                    })
+                    .ToListAsync();
+
+                response.Status = true;
+                response.Dados = apiarios;
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Mensage = $"Erro ao buscar apiários: {ex.Message}";
+            }
+
+            return response;
+        }
         /*
             Aqui Bioma e Ativida sendo atualizadas.
             Como eu não sei é necessário o response dos dados de apiário eu coloquei o responde como bool e eu tentei criar o ApiarioResponseDTO.
