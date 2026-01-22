@@ -116,7 +116,7 @@ namespace BackendApi.Services.ApiarioService
             Como eu não sei é necessário o response dos dados de apiário eu coloquei o responde como bool e eu tentei criar o ApiarioResponseDTO.
          */
 
-        public async Task<Response<bool>> EditarApiario(int userId, ApiarioUpdateDTO dto){
+        public async Task<Response<bool>> EditarApiario(int userId,int apiarioId, ApiarioUpdateDTO dto){
             var response = new Response<bool>();
 
             try
@@ -124,7 +124,7 @@ namespace BackendApi.Services.ApiarioService
                 var apiario = await _context.Apiarios
                     .Include(c => c.User)
                     .FirstOrDefaultAsync(u => 
-                        u.Id == dto.Id && 
+                        u.Id == apiarioId && 
                         u.User.Id == userId && 
                         u.DeletionDate == null
                     );

@@ -42,16 +42,16 @@ namespace BackendApi.Controllers
             return Ok(response);
         }
 
-        [HttpPost("EditarApiario")]
-        public async Task<IActionResult> EditarApiario(ApiarioUpdateDTO dto)
+        [HttpPut("EditarApiario/{apiarioId}")]
+        public async Task<IActionResult> EditarApiario(int apiarioId ,ApiarioUpdateDTO dto)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            var response = await _apiarioService.EditarApiario(userId, dto);
+            var response = await _apiarioService.EditarApiario(userId, apiarioId, dto);
             return Ok(response);
         }
 
-        [HttpPost("DeletarApiario/{apirioId}")]
+        [HttpDelete("DeletarApiario/{apiarioId}")]
         public async Task<IActionResult> DeletarApiario(int apiarioId)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
