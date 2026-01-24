@@ -11,6 +11,8 @@ namespace BackendApi.Models
         public required byte[] PasswordHash { get; set; }
         public required byte[] PasswordSalt { get; set; }
         public bool isAdmin { get; set; } = false;
+        public int TentativasLogin {get; set; } = 0;
+        public DateTime? LoginBloqueado {get; set;} = null;
         public DateTime CreationDate { get; set; } = DateTime.Now;
         public DateTime? DeletionDate { get; set; } = null;
 

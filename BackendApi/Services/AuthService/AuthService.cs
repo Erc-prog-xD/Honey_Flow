@@ -38,7 +38,8 @@ namespace BackendApi.Services.AuthService
                     Celular = userRegister.Celular,
                     Email = userRegister.Email,
                     PasswordHash = senhaHash,
-                    PasswordSalt = senhaSalt
+                    PasswordSalt = senhaSalt,
+                    TentativasLogin = 0
                 };
                 _context.Add(User);
                 await _context.SaveChangesAsync();
@@ -56,38 +57,75 @@ namespace BackendApi.Services.AuthService
 
         }
 
-        public async Task<Response<string>> Login(UserLoginDTO userLogin)
+       public async Task<Response<string>> Login(UserLoginDTO userLogin)
         {
-            Response<string> response = new Response<string> { Mensage = "" };
+            Response<string> response = new Response<string>();
 
             try
-                {
-                    var User = await _context.Users.FirstOrDefaultAsync(User => User.Email == userLogin.Email && User.DeletionDate == null);
-                    if (User == null)
-                    {
-                        response.Status = false;
-                        response.Mensage = "User não encontrado!";
-                        return response;
-                    }
-                    if (!_senhaInterface.VerificaSenhaHash(userLogin.Password, User.PasswordHash, User.PasswordSalt))
-                    {
-                        response.Status = false;
-                        response.Mensage = "Credenciais invalidas!";
-                        return response;
-                    }
+            {
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == userLogin.Email && u.DeletionDate == null);
 
-                    var token = _senhaInterface.CriarToken(User);
-                    response.Mensage = "Login realizado com sucesso!";
-                    response.Dados = token;
-                    response.Status = true;
-
-                }
-            catch(Exception ex)
+                // Mensagem genérica por segurança
+                if (user == null)
                 {
-                    response.Dados = null;
                     response.Status = false;
-                    response.Mensage = ex.Message;
+                    response.Mensage = "Email ou senha inválidos.";
+                    return response;
                 }
+
+                // Verifica se está bloqueado
+                if (user.LoginBloqueado != null && user.LoginBloqueado > DateTime.Now)
+                {
+                    response.Status = false;
+                    response.Mensage = "Usuário bloqueado. Tente novamente em alguns minutos.";
+                    return response;
+                }
+
+                // Validação da senha
+                if (!_senhaInterface.VerificaSenhaHash(
+                    userLogin.Password,
+                    user.PasswordHash,
+                    user.PasswordSalt))
+                {
+                    user.TentativasLogin++;
+
+                    if (user.TentativasLogin >= 3)
+                    {
+                        user.LoginBloqueado = DateTime.Now.AddMinutes(5);
+                        user.TentativasLogin = 0;
+
+                        response.Mensage =
+                            "Usuário bloqueado por 5 minutos após 3 tentativas inválidas.";
+                    }
+                    else
+                    {
+                        response.Mensage = "Email ou senha inválidos.";
+                    }
+
+                    response.Status = false;
+                    await _context.SaveChangesAsync();
+                    return response;
+                }
+
+                // Login bem-sucedido
+                var token = _senhaInterface.CriarToken(user);
+
+                user.TentativasLogin = 0;
+                user.LoginBloqueado = null;
+
+                await _context.SaveChangesAsync();
+
+                response.Status = true;
+                response.Mensage = "Login realizado com sucesso!";
+                response.Dados = token;
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Mensage = "Erro ao realizar login.";
+                response.Dados = ex.Message;
+            }
 
             return response;
         }
