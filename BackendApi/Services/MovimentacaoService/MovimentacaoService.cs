@@ -86,7 +86,7 @@ namespace BackendApi.Services.MovimentacaoService
                 if (dto.Tipo == TipoMovimentoMelEnum.Colheita && dto.QuantidadeKg < 0)
                 {
                     response.Status = false;
-                    response.Mensage = $"Colheita com quantidadeKg meno ou igual a zero não precisa ser movimentado";
+                    response.Mensage = $"Colheita com quantidadeKg menor ou igual a zero não precisa ser movimentada";
                     return response;
                 }
                 if(dto.Tipo != TipoMovimentoMelEnum.Colheita && dto.QuantidadeKg > producao.EstoqueAtualKg)

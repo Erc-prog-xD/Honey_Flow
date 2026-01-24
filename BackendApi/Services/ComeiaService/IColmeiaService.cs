@@ -7,5 +7,7 @@ namespace BackendApi.Services.ColmeiaService
     {
         Task<Response<string>> CriarColmeia(int userId, ColmeiaCreateDTO dto);
         Task<Response<List<ColmeiaResponseDTO>>> BuscarColmeiasDoApiario(int apiarioId);
+        Task<Response<string>> EditarColmeia(int userId, int colmeiaId, ColmeiaUpdateDTO dto);
+        Task<Response<string>> DeletarColmeia(int userId, int colmeiaId);
     }
 }

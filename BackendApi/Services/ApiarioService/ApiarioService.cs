@@ -1,3 +1,4 @@
+using BackendApi.Enums;
 using BackendApi.Data;
 using BackendApi.Dto.ApiarioDTO;
 using BackendApi.Models;
@@ -65,8 +66,9 @@ namespace BackendApi.Services.ApiarioService
             }
             catch (Exception ex)
             {
-                response.Status = false;
+                response.Dados = null;
                 response.Mensage = "Erro ao criar apiário: " + ex.Message;
+                response.Status = false;
             }
 
             return response;
@@ -76,11 +78,130 @@ namespace BackendApi.Services.ApiarioService
         // ----------------------------
         // Buscar Apiários do Usuário
         // ----------------------------
-        public async Task<List<Apiario>> BuscarApiariosDoUsuario(int userId)
+       public async Task<Response<List<ApiarioResponseDTO>>> BuscarApiariosDoUsuario(int userId)
         {
-            return await _context.Apiarios
-                .Where(a => a.User.Id == userId && a.DeletionDate == null)
-                .ToListAsync();
+            var response = new Response<List<ApiarioResponseDTO>>();
+
+            try
+            {
+                var apiarios = await _context.Apiarios
+                    .AsNoTracking()
+                    .Where(a => a.User.Id == userId && a.DeletionDate == null)
+                    .Select(a => new ApiarioResponseDTO
+                    {
+                        Id = a.Id,
+                        UserId = a.User.Id,
+                        Localizacao = a.Localizacao,
+                        Coord_X = a.Coord_X,
+                        Coord_Y = a.Coord_Y,
+                        Bioma = a.Bioma,
+                        TipoDeAbelha = a.TipoDeAbelha,
+                        Atividade = a.Atividade
+                    })
+                    .ToListAsync();
+
+                response.Status = true;
+                response.Dados = apiarios;
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Mensage = $"Erro ao buscar apiários: {ex.Message}";
+            }
+
+            return response;
         }
+        /*
+            Aqui Bioma e Ativida sendo atualizadas.
+            Como eu não sei é necessário o response dos dados de apiário eu coloquei o responde como bool e eu tentei criar o ApiarioResponseDTO.
+         */
+
+        public async Task<Response<bool>> EditarApiario(int userId,int apiarioId, ApiarioUpdateDTO dto){
+            var response = new Response<bool>();
+
+            try
+            {
+                var apiario = await _context.Apiarios
+                    .Include(c => c.User)
+                    .FirstOrDefaultAsync(u => 
+                        u.Id == apiarioId && 
+                        u.User.Id == userId && 
+                        u.DeletionDate == null
+                    );
+
+                if(apiario == null){
+                    response.Status = false;
+                    response.Mensage = "Apiario não encontrado ou acesso negado.";
+                    response.Dados = false;
+                    return response;
+                }
+
+                apiario.Bioma = dto.Bioma ?? apiario.Bioma;
+                apiario.Atividade = dto.Atividade ?? apiario.Atividade;
+
+                _context.Apiarios.Update(apiario);
+                await _context.SaveChangesAsync();
+
+                response.Status = true;
+                response.Mensage = "Apiario atualizado com sucesso!";
+                response.Dados = true;
+
+            }catch(Exception ex){
+                response.Status = false;
+                response.Mensage = "Erro ao editar apiario: " + ex.Message;
+                response.Dados = false;
+            }
+
+            return response;
+        }
+
+        public async Task<Response<bool>> DeletarApiario(int userId, int apiarioId){
+            var response = new Response<bool>();
+
+            try
+            {
+                var apiario = await _context.Apiarios
+                    .Include(c => c.User)
+                    .FirstOrDefaultAsync(u => 
+                        u.Id == apiarioId && 
+                        u.User.Id == userId && 
+                        u.DeletionDate == null
+                    );
+
+                if(apiario == null){
+                    response.Status = false;
+                    response.Mensage = "Apiario não encontrado ou acesso negado.";
+                    response.Dados = false;
+                    return response;
+                }
+
+                apiario.Atividade = StatusAtividadeEnum.Desativada;
+                apiario.DeletionDate = DateTime.Now;
+
+                var colmeiasVinculadas = await _context.Colmeias
+                    .Where(c => c.Apiario.Id == apiarioId && c.DeletionDate == null)
+                    .ToListAsync();
+                
+                foreach(var colmeia in colmeiasVinculadas)
+                {
+                    colmeia.Status = StatusAtividadeEnum.Desativada;
+                    colmeia.DeletionDate = DateTime.Now;
+                }
+
+                _context.Apiarios.Update(apiario);
+                await _context.SaveChangesAsync();
+
+                response.Status = true;
+                response.Mensage = "Apiario delete com sucesso!";
+                response.Dados = true;
+
+            }catch(Exception ex){
+                response.Status = false;
+                response.Mensage = "Erro ao deletar apiario: " + ex.Message;
+                response.Dados = false;
+            }
+
+            return response;
+        }   
     }
 }

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, CreditCard, Phone } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../assets/css/Login.css';
 import logoBee from '../assets/img/logo_hf.svg';
 import ToastCenter from '../components/Toast';
+import { useEffect } from 'react';
+import { login, register } from '../services/authServices';
+
 
 // --- Componente Input ---
 const Input = ({ icon: Icon, prefix, ...props }) => {
@@ -22,6 +25,9 @@ const Login = () => {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false); // Novo estado de carregamento
 
+
+  const navigate = useNavigate();
+
   // Login state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -29,11 +35,12 @@ const Login = () => {
   // Register state
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
-  const [registerCelular, setCelular] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
+  const [registerCelular, setCelular] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [registerLoading, setRegisterLoading] = useState(false); // Novo estado de carregamento para o Register
+
 
   const showToast = (message, type) => {
     setToast({ message, type });
@@ -51,117 +58,76 @@ const Login = () => {
     setCpf(formatCPF(e.target.value));
   };
 
-  // --- Função de Login Atualizada ---
-  const handleLoginSubmit = async (e) => {
+useEffect(() => {
+  const token = localStorage.getItem('Token');
+  if (token) {
+    navigate('/dashboard');
+  }
+}, []);
+
+
+const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const loginData = {
-      email: loginEmail,
-      password: loginPassword,
-    };
-
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Auth/Login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData),
-      });
+        const data = await login(loginEmail, loginPassword);
 
-      if (response.ok) {
-        // Assume que a API retorna um JSON com o token ou dados do usuário
-        const data = await response.json();
-        console.log('Login successful', data);
-        
-        // Exemplo: Salvar token no Local Storage
-        // localStorage.setItem('authToken', data.token); 
-        
+        localStorage.setItem('Token', data.dados);
+
         showToast('Login realizado com sucesso!', 'success');
-        // Redirecionar para o dashboard, por exemplo
-        // history.push('/dashboard'); 
 
-      } else {
-        // Tratar erros (ex: credenciais inválidas)
-        const errorData = await response.json();
-        console.error('Login failed', errorData);
-
-        // Exibir mensagem de erro da API ou uma mensagem genérica
-        showToast(errorData.message || 'Credenciais inválidas ou erro no servidor.', 'error');
-      }
+        setTimeout(() => navigate('/dashboard'), 800);
     } catch (error) {
-      console.error('Network or CORS error:', error);
-      showToast('Erro de conexão. Verifique o servidor da API.', 'error');
+        showToast(error.message || 'Credenciais inválidas.', 'error');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
- // --- Função de Registro Atualizada ---
-  const handleRegisterSubmit = async (e) => {
+const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setRegisterLoading(true);
 
     if (registerPassword !== confirmPassword) {
-      showToast('As senhas não coincidem.', 'error');
-      setRegisterLoading(false);
-      return;
+        showToast('As senhas não coincidem.', 'error');
+        setRegisterLoading(false);
+        return;
     }
 
     const cpfDigits = cpf.replace(/\D/g, '');
     if (cpfDigits.length !== 11) {
-      showToast('CPF inválido. Digite os 11 dígitos.', 'warning');
-      setRegisterLoading(false);
-      return;
+        showToast('CPF inválido. Digite os 11 dígitos.', 'warning');
+        setRegisterLoading(false);
+        return;
     }
 
-    // Dados que serão enviados para o endpoint de registro (ajuste conforme o DTO da sua API)
     const registerData = {
-      Nome: name,
-      Cpf: cpfDigits, // Enviar apenas os dígitos do CPF
-      Email: registerEmail,
-      Celular: registerCelular,
-      Password: registerPassword,
-      // Se sua API exigir confirmação de senha no DTO, adicione aqui
-      // confirmPassword: confirmPassword 
+        Nome: name,
+        Cpf: cpfDigits,
+        Email: registerEmail,
+        Celular: registerCelular,
+        Password: registerPassword,
     };
-    
-    // Assumindo a rota /api/Auth/Register para o cadastro
-    const REGISTER_URL = `${API_BASE_URL}/api/Auth/Register`; 
 
     try {
-      const response = await fetch(REGISTER_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registerData),
-      });
+        await register(registerData);
 
-      if (response.ok) {
-        // Assume que a API retorna sucesso no cadastro
-        const data = await response.json();
-        console.log('Registration successful', data);
-        
-        showToast('Cadastro realizado com sucesso! Faça login para continuar.', 'success');
-        
-        // Opcional: Mudar para a aba de login após o sucesso
-        setIsLogin(true); 
+        showToast(
+            'Cadastro realizado com sucesso! Faça login para continuar.',
+            'success'
+        );
 
-      } else {
-        // Tratar erros de validação (ex: email já em uso)
-        const errorData = await response.json();
-        console.error('Registration failed', errorData);
-        showToast(errorData.message || 'Falha no cadastro. Verifique os dados.', 'error');
-      }
+        setIsLogin(true);
     } catch (error) {
-      console.error('Network or CORS error:', error);
-      showToast('Erro de conexão. Verifique o servidor da API.', 'error');
+        showToast(
+            error.message || 'Falha no cadastro. Verifique os dados.',
+            'error'
+        );
     } finally {
-      setRegisterLoading(false);
+        setRegisterLoading(false);
     }
-  };
+};
 
   return (
     <div className="login-container">
@@ -248,7 +214,7 @@ const Login = () => {
                 onChange={(e) => setRegisterEmail(e.target.value)}
                 required
               />
-               <Input
+              <Input
                 type="celular"
                 placeholder="Celular"
                 icon={Phone}
@@ -273,7 +239,7 @@ const Login = () => {
                 required
               />
 
-             <button type="submit" className="submit-btn" disabled={registerLoading}>
+              <button type="submit" className="submit-btn" disabled={registerLoading}>
                 {registerLoading ? 'Criando...' : 'Criar conta'}
               </button>
             </form>

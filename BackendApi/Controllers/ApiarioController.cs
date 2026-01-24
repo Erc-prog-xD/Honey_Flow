@@ -41,5 +41,23 @@ namespace BackendApi.Controllers
             var response = await _apiarioService.BuscarApiariosDoUsuario(userId);
             return Ok(response);
         }
+
+        [HttpPut("EditarApiario/{apiarioId}")]
+        public async Task<IActionResult> EditarApiario(int apiarioId ,ApiarioUpdateDTO dto)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var response = await _apiarioService.EditarApiario(userId, apiarioId, dto);
+            return Ok(response);
+        }
+
+        [HttpDelete("DeletarApiario/{apiarioId}")]
+        public async Task<IActionResult> DeletarApiario(int apiarioId)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var response = await _apiarioService.DeletarApiario(userId, apiarioId);
+            return Ok(response);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using BackendApi.Enums;
 using BackendApi.Data;
 using BackendApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -97,6 +98,92 @@ namespace BackendApi.Services.ColmeiaService
                 response.Mensage = "Erro ao buscar colmeias: " + ex.Message;
                 response.Dados = null; 
             }
+            return response;
+        }
+
+
+        /*
+            Eu coloquei id aqui, só para garantir que nenhuma ação de CRUD posssa ser feita por um usuário que está logado, mas 
+            que não seja dono do apiário onde a colmeia está. Se for demais basta tirar. Creio eu que não haja muitos problemas nisso não!
+
+            Caso as informação de em qual apiário a colmeia está poderem ser mudadas, precisasse garantir que o apiário para onde a colmeia será transferida
+            produza o mesmo tipo de mel que a colmeia atualmente produz (aparentemente ela não pode ser mudada de apiário, mas nunca se sabe).
+        */
+
+        public async Task<Response<string>> EditarColmeia(int userId, int colmeiaId, ColmeiaUpdateDTO dto){
+            var response = new Response<string>();
+
+            try{
+                var colmeia = await _context.Colmeias
+                    .Include(c => c.Apiario)
+                    .FirstOrDefaultAsync(u => 
+                        u.Id ==  colmeiaId && 
+                        u.Apiario.User.Id == userId &&
+                        u.DeletionDate == null
+                    );
+                
+                if (colmeia == null){
+                    response.Status = false;
+                    response.Mensage = "Colmeia não encontrado ou acesso negado.";
+                    return response;
+                }
+
+                colmeia.AnoRainha = dto.AnoRainha ?? colmeia.AnoRainha;
+                colmeia.Status = dto.Status ?? colmeia.Status;
+
+                _context.Colmeias.Update(colmeia);
+                await _context.SaveChangesAsync();
+
+                response.Status = true;
+                response.Mensage = "Colmeia atualizada com sucesso!";
+                response.Dados = null;
+
+            }catch (Exception ex){
+                response.Status = false;
+                response.Mensage = "Erro ao editar colmeia: " + ex.Message;
+                response.Dados = null; 
+            }
+
+            return response;
+        }
+
+
+        public async Task<Response<string>> DeletarColmeia(int userId, int colmeiaId){
+            var response = new Response<string>();
+
+            try
+            {
+                var colmeia = await _context.Colmeias
+                    .Include(c => c.Apiario)
+                    .FirstOrDefaultAsync(u => 
+                        u.Id == colmeiaId && 
+                        u.Apiario.User.Id == userId && 
+                        u.DeletionDate == null);
+
+                if (colmeia == null)
+                {
+                    response.Status = false;
+                    response.Mensage = "Colmeia não encontrada ou acesso negado.";
+                    response.Dados = null;
+                    return response;
+                }
+
+                colmeia.Status = StatusAtividadeEnum.Desativada;
+                colmeia.DeletionDate = DateTime.Now;
+                _context.Colmeias.Update(colmeia);
+
+                await _context.SaveChangesAsync();
+                
+                response.Status = true;
+                response.Mensage = "Colmeia removida com sucesso!";
+                response.Dados = null;
+
+            }catch (Exception ex){
+                response.Status = false;
+                response.Mensage = "Erro ao deletar colmeia: " + ex.Message;
+                response.Dados = null;
+            }
+
             return response;
         }
     }

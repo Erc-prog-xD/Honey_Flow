@@ -25,12 +25,27 @@ namespace BackendApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("BuscarColmeiasDoApiario")]
+        [HttpGet("BuscarColmeiasDoApiario/{apiarioId}")]
         public async Task<ActionResult> BuscarColmeiasDoApiario(int apiarioId)
         {
             var response = await _colmeiaInterface.BuscarColmeiasDoApiario(apiarioId);
             return Ok(response);
         }
 
+        [HttpPut("EditarColmeia/{colmeiaId}")]
+        public async Task<ActionResult> EditarColmeia(int colmeiaId, ColmeiaUpdateDTO dto)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var response = await _colmeiaInterface.EditarColmeia(userId , colmeiaId, dto);
+            return Ok(response);
+        }
+
+        [HttpDelete("DeletarColmeia/{colmeiaId}")]
+        public async Task<ActionResult> DeletarColmeia(int colmeiaId)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var response = await _colmeiaInterface.DeletarColmeia(userId , colmeiaId);
+            return Ok(response);
+        }
     }
 }
