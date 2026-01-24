@@ -67,22 +67,37 @@ useEffect(() => {
 
 
 const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-        const data = await login(loginEmail, loginPassword);
+  try {
+    const data = await login(loginEmail, loginPassword);
 
-        localStorage.setItem('Token', data.dados);
-
-        showToast('Login realizado com sucesso!', 'success');
-
-        setTimeout(() => navigate('/dashboard'), 800);
-    } catch (error) {
-        showToast(error.message || 'Credenciais inválidas.', 'error');
-    } finally {
-        setLoading(false);
+    // Verifica se o backend retornou sucesso e token
+    if (!data || data.status !== true || !data.dados) {
+      showToast(
+        data?.mensage || 'Erro ao realizar login.',
+        'error'
+      );
+      return;
     }
+
+    // Token válido
+    localStorage.setItem('Token', data.dados);
+
+    showToast('Login realizado com sucesso!', 'success');
+
+    setTimeout(() => navigate('/dashboard'), 800);
+  } catch (error) {
+    showToast(
+      error?.response?.data?.mensage ||
+      error.message ||
+      'Erro ao conectar com o servidor.',
+      'error'
+    );
+  } finally {
+    setLoading(false);
+  }
 };
 
 const handleRegisterSubmit = async (e) => {
