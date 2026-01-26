@@ -129,6 +129,7 @@ namespace BackendApi.Services.ColmeiaService
                 }
 
                 colmeia.AnoRainha = dto.AnoRainha ?? colmeia.AnoRainha;
+                colmeia.AnoColmeia = dto.AnoColmeia ?? colmeia.AnoColmeia;
                 colmeia.Status = dto.Status ?? colmeia.Status;
 
                 _context.Colmeias.Update(colmeia);

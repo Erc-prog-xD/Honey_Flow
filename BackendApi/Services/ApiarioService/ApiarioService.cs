@@ -41,6 +41,7 @@ namespace BackendApi.Services.ApiarioService
                     Coord_Y = dto.Coord_Y,
                     Bioma = dto.Bioma,
                     TipoDeAbelha = dto.TipoDeAbelha,
+                    TipoDeMel = dto.TipoDeMel,
                     Atividade = dto.Atividade,
                     CreationDate = DateTime.Now
                 };
@@ -96,7 +97,10 @@ namespace BackendApi.Services.ApiarioService
                         Coord_Y = a.Coord_Y,
                         Bioma = a.Bioma,
                         TipoDeAbelha = a.TipoDeAbelha,
-                        Atividade = a.Atividade
+                        TipoDeMel = a.TipoDeMel,
+                        Atividade = a.Atividade,
+                        CreationDate = a.CreationDate,
+                        DeletionDate = a.DeletionDate
                     })
                     .ToListAsync();
 
@@ -138,6 +142,12 @@ namespace BackendApi.Services.ApiarioService
 
                 apiario.Bioma = dto.Bioma ?? apiario.Bioma;
                 apiario.Atividade = dto.Atividade ?? apiario.Atividade;
+                apiario.Coord_X = dto.Coord_X;
+                apiario.Coord_Y = dto.Coord_Y;
+                apiario.Localizacao = dto.Localizacao ?? apiario.Localizacao;
+                apiario.TipoDeAbelha = dto.TipoDeAbelha ?? apiario.TipoDeAbelha;
+                apiario.TipoDeMel = dto.TipoDeMel ?? apiario.TipoDeMel;
+
 
                 _context.Apiarios.Update(apiario);
                 await _context.SaveChangesAsync();
