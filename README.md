@@ -2,7 +2,7 @@
 O Honey Flow é um sistema de gerenciamento de apiários, colmeias e produção de mel. Esta aplicação foi projetada para oferecer uma experiência de gestão intuitiva e responsiva, permitindo que pequenos e médios apicultores monitorem seus apiários, controlem seus estoques e acompanhem vendas e perdas com facilidade.
 
 O objetivo principal é simplificar o dia a dia da produção melífera, substituindo anotações manuais por uma interface digital que centraliza as informações essenciais para o crescimento do produtor.
-Para acessar nosso manual de uso, [clique aqui](https://drive.google.com/file/d/1XrOyurh2RvqMk1Qsp84di_o2amaehKIV/view?usp=sharing) 
+Para acessar nosso manual de uso, [clique aqui.](https://drive.google.com/file/d/1XrOyurh2RvqMk1Qsp84di_o2amaehKIV/view?usp=sharing)
 
 ## Backend API
 Esta API foi construída com foco em escalabilidade, segurança e integridade de dados.
