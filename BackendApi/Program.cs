@@ -29,7 +29,7 @@ builder.Services.AddScoped<IAuthInterface, AuthService>();
 builder.Services.AddScoped<ISenhaInterface, SenhaService>();
 builder.Services.AddScoped<IApiarioService, ApiarioService>();
 builder.Services.AddScoped<IColmeiaService, ColmeiaService>();
-//builder.Services.AddScoped<IProducaoService>();
+builder.Services.AddScoped<IProducaoService, ProducaoService>();
 builder.Services.AddScoped<IMovimentacaoService, MovimentacaoService>();
 
 
@@ -101,6 +101,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // -----------------------------------------------------------------------------
 var app = builder.Build();
 
+
 // -----------------------------------------------------------------------------
 // Aplicar migrations automaticamente
 // -----------------------------------------------------------------------------
@@ -108,6 +109,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbContext.Database.Migrate();
+    await DbSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 if (app.Environment.IsDevelopment())
