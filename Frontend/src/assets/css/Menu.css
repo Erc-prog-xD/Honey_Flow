@@ -37,96 +37,196 @@
   color: #333;
 }
 
+/* ================================
+   Modal Overlay
+   ================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 49;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ================================
+   Modal Card
+   ================================ */
 .add-card {
-  background-color: #FFFFFF;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFEF8 100%);
   width: 90%;
-  max-width: 360px;
-  border-radius: 12px;
-  border: 1px solid #eee;
+  max-width: 380px;
+  border-radius: 20px;
+  border: none;
   overflow: hidden;
-  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 189, 89, 0.2);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .add-header {
-  background: #FFB352;
-  height: 56px;
+  background: linear-gradient(135deg, #FFB352 0%, #FF9F3D 100%);
+  height: 64px;
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 10px;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 20px;
   color: #111;
   position: relative;
 }
 
+.add-header-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .add-content {
-  padding: 12px 16px 20px 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .close-x {
   position: absolute;
-  right: 10px;
-  top: 12px;
-  width: 30px;
-  height: 26px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  background: #FFFFFF;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
   border: none;
-  font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(17, 24, 39, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
-/* Modal central sem overlay escuro (fundo amarelo permanece visível) */
+.close-x:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Modal central com overlay */
 .add-modal {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 239, 204, 0.0);
   padding: 20px;
   z-index: 50;
 }
 
-/* Botões dentro do modal */
-.add-content .btn-menu {
-  height: 56px;
-  border-radius: 26px;
-  font-size: 18px;
-  padding: 12px 18px;
-  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.06);
-  background: #FFE79F;
-  color: #111;
-  border: none;
+/* ================================
+   Botões de Opção
+   ================================ */
+.btn-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   width: 100%;
-  max-width: 280px;
-  margin: 0 auto;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
 }
 
-.add-card {
-  border-radius: 12px;
-  overflow: hidden;
+.btn-option-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
-.add-header {
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-}
-
-.add-card .add-content {
-  background: #fff;
+.btn-option-text {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  align-items: center;
-  padding-bottom: 20px;
+  gap: 2px;
+}
+
+.btn-option-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111;
+}
+
+.btn-option-desc {
+  font-size: 13px;
+  color: #666;
+}
+
+/* Colmeia */
+.btn-colmeia {
+  background: linear-gradient(135deg, #FFF9E6 0%, #FFF3D0 100%);
+  box-shadow: 0 4px 12px rgba(255, 189, 89, 0.15);
+}
+
+.btn-colmeia .btn-option-icon {
+  background: linear-gradient(135deg, #FFD966 0%, #FFB347 100%);
+  color: #111;
+}
+
+.btn-colmeia:hover {
+  border-color: #FFB347;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 189, 89, 0.25);
+}
+
+/* Apiário */
+.btn-apiario {
+  background: linear-gradient(135deg, #FFF0E0 0%, #FFE4CC 100%);
+  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.12);
+}
+
+.btn-apiario .btn-option-icon {
+  background: linear-gradient(135deg, #FF9500 0%, #E67E00 100%);
+  color: white;
+}
+
+.btn-apiario:hover {
+  border-color: #FF9500;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 149, 0, 0.25);
 }
 
 /* Novos estilos para header, grid e cards */

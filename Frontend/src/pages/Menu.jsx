@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X, Hexagon, MapPin, Plus } from 'lucide-react';
 import '../assets/css/Menu.css';
 
 const Menu = () => {
@@ -6,24 +7,48 @@ const Menu = () => {
 
   return (
     <div className="menu-page">
-      {/* header removed - modal opens on page load */}
-
       <main className="content">
         {showAdd && (
-          <div className="add-modal" role="dialog" aria-modal="true">
-            <div className="add-card">
-              <div className="add-header">
-                <span>Adicionar</span>
-                <button className="close-x" onClick={() => setShowAdd(false)}>×</button>
-              </div>
-              <div className="add-content">
-                <button className="btn-menu btn-yellow" style={{ width: '100%' }}>Colmeia</button>
-                <button className="btn-menu btn-orange" style={{ width: '100%' }}>Apiário</button>
+          <>
+            {/* Overlay escuro */}
+            <div className="modal-overlay" onClick={() => setShowAdd(false)} />
+
+            {/* Modal */}
+            <div className="add-modal" role="dialog" aria-modal="true">
+              <div className="add-card">
+                <div className="add-header">
+                  <div className="add-header-icon">
+                    <Plus size={20} />
+                  </div>
+                  <span>Adicionar</span>
+                  <button className="close-x" onClick={() => setShowAdd(false)}>
+                    <X size={18} />
+                  </button>
+                </div>
+                <div className="add-content">
+                  <button className="btn-option btn-colmeia">
+                    <div className="btn-option-icon">
+                      <Hexagon size={24} />
+                    </div>
+                    <div className="btn-option-text">
+                      <span className="btn-option-title">Colmeia</span>
+                      <span className="btn-option-desc">Adicionar nova colmeia</span>
+                    </div>
+                  </button>
+                  <button className="btn-option btn-apiario">
+                    <div className="btn-option-icon">
+                      <MapPin size={24} />
+                    </div>
+                    <div className="btn-option-text">
+                      <span className="btn-option-title">Apiário</span>
+                      <span className="btn-option-desc">Criar novo apiário</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
-
       </main>
     </div>
   );

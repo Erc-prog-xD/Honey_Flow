@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, CreditCard, Phone } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../assets/css/Login.css';
-import logoBee from '../assets/img/logo_hf.svg';
+import logoBee from '../assets/img/logo-hf.svg';
 import ToastCenter from '../components/Toast';
-import { useEffect } from 'react';
-import { login, register } from '../services/authServices';
 
+import { apiFetch, decodeJWT } from '../services/api';
 
 // --- Componente Input ---
 const Input = ({ icon: Icon, prefix, ...props }) => {
@@ -20,129 +19,71 @@ const Input = ({ icon: Icon, prefix, ...props }) => {
 };
 
 const Login = () => {
-  const API_BASE_URL = 'http://localhost:8080';
-  const [isLogin, setIsLogin] = useState(true);
   const [toast, setToast] = useState(null);
-  const [loading, setLoading] = useState(false); // Novo estado de carregamento
-
-
   const navigate = useNavigate();
 
   // Login state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-
-  // Register state
-  const [name, setName] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerCelular, setCelular] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [registerLoading, setRegisterLoading] = useState(false); // Novo estado de carregamento para o Register
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const showToast = (message, type) => {
     setToast({ message, type });
   };
 
-  const formatCPF = (value) => {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return digits.replace(/(\d{3})(\d+)/, '$1.$2');
-    if (digits.length <= 9) return digits.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
-    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-  };
-
-  const handleCpfChange = (e) => {
-    setCpf(formatCPF(e.target.value));
-  };
-
-useEffect(() => {
-  const token = localStorage.getItem('Token');
-  if (token) {
-    navigate('/dashboard');
-  }
-}, []);
-
-
-const handleLoginSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-
-  try {
-    const data = await login(loginEmail, loginPassword);
-
-    // Verifica se o backend retornou sucesso e token
-    if (!data || data.status !== true || !data.dados) {
-      showToast(
-        data?.mensage || 'Erro ao realizar login.',
-        'error'
-      );
-      return;
-    }
-
-    // Token válido
-    localStorage.setItem('Token', data.dados);
-
-    showToast('Login realizado com sucesso!', 'success');
-
-    setTimeout(() => navigate('/dashboard'), 800);
-  } catch (error) {
-    showToast(
-      error?.response?.data?.mensage ||
-      error.message ||
-      'Erro ao conectar com o servidor.',
-      'error'
-    );
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleRegisterSubmit = async (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setRegisterLoading(true);
-
-    if (registerPassword !== confirmPassword) {
-        showToast('As senhas não coincidem.', 'error');
-        setRegisterLoading(false);
-        return;
-    }
-
-    const cpfDigits = cpf.replace(/\D/g, '');
-    if (cpfDigits.length !== 11) {
-        showToast('CPF inválido. Digite os 11 dígitos.', 'warning');
-        setRegisterLoading(false);
-        return;
-    }
-
-    const registerData = {
-        Nome: name,
-        Cpf: cpfDigits,
-        Email: registerEmail,
-        Celular: registerCelular,
-        Password: registerPassword,
-    };
+    setIsLoading(true);
 
     try {
-        await register(registerData);
+      const response = await apiFetch('/api/Auth/Login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword
+        })
+      });
 
-        showToast(
-            'Cadastro realizado com sucesso! Faça login para continuar.',
-            'success'
-        );
+      // DEBUG: Mostra toda a resposta recebida
+      console.log('%c[Login] Resposta completa:', 'color: #8b5cf6; font-weight: bold;', response);
 
-        setIsLogin(true);
+      // Verifica se o login foi bem-sucedido:
+      // 1. O campo 'status' deve ser true
+      // 2. O campo 'dados' (token) deve existir e não ser vazio
+      const loginSuccess = response.status === true && response.dados;
+
+      console.log('%c[Login] Status:', 'color: #8b5cf6;', response.status);
+      console.log('%c[Login] Dados (Token):', 'color: #8b5cf6;', response.dados);
+      console.log('%c[Login] Login bem-sucedido?', 'color: #8b5cf6;', loginSuccess);
+
+      if (loginSuccess) {
+        // Salva o token no localStorage
+        localStorage.setItem('Token', response.dados);
+
+        // Decodifica o JWT para extrair os dados do usuário
+        const userData = decodeJWT(response.dados);
+        console.log('%c[Login] Dados do usuário (JWT):', 'color: #10b981; font-weight: bold;', userData);
+
+        if (userData) {
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+
+        showToast('Login realizado com sucesso!', 'success');
+        setTimeout(() => navigate('/dashboard'), 700);
+      } else {
+        // Login falhou - mostra a mensagem da API
+        const errorMessage = response.mensage || 'Email ou senha inválidos.';
+        console.log('%c[Login] Falha:', 'color: #ef4444;', errorMessage);
+        showToast(errorMessage, 'error');
+      }
     } catch (error) {
-        showToast(
-            error.message || 'Falha no cadastro. Verifique os dados.',
-            'error'
-        );
+      console.error('%c[Login] Erro de conexão:', 'color: #ef4444; font-weight: bold;', error);
+      showToast(error.mensage || 'Erro ao conectar com o servidor.', 'error');
     } finally {
-        setRegisterLoading(false);
+      setIsLoading(false);
     }
-};
+  };
 
   return (
     <div className="login-container">
@@ -157,108 +98,46 @@ const handleRegisterSubmit = async (e) => {
         <div className="right-panel">
           <h1>Bem-vindo</h1>
 
-          <div className="toggle-container">
-            <button
-              className={`toggle-btn ${isLogin ? 'active' : ''}`}
-              onClick={() => setIsLogin(true)}
-            >
-              Entrar
-            </button>
-            <button
-              className={`toggle-btn ${!isLogin ? 'active' : ''}`}
-              onClick={() => setIsLogin(false)}
-            >
-              Novo usuário
-            </button>
-          </div>
-
           {/* Formulário de Login */}
-          {isLogin ? (
-            <form className="login-form" onSubmit={handleLoginSubmit}>
-              <Input
-                type="email"
-                placeholder="Email"
-                icon={Mail}
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                required
-              />
-              <Input
-                type="password"
+          <form className="login-form" onSubmit={handleLoginSubmit}>
+            <Input
+              type="email"
+              placeholder="Email"
+              icon={Mail}
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              required
+            />
+            <div className="input-wrapper">
+              <Lock className="input-icon" size={20} />
+              <input
+                className="input-field"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Senha"
-                icon={Lock}
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 required
               />
-
-              <div className="form-bottom">
-                <Link to="/forgot-password" className="forgot-link">
-                  Esqueceu a senha?
-                </Link>
-              </div>
-
-              <button type="submit" className="submit-btn" disabled={loading}>
-                {loading ? 'Entrando...' : 'Entrar'}
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
-            </form>
-          ) : (
-            /* Formulário de Cadastro */
-            <form className="login-form" onSubmit={handleRegisterSubmit}>
-              <Input
-                type="text"
-                placeholder="Nome"
-                icon={User}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <Input
-                type="text"
-                placeholder="CPF"
-                icon={CreditCard}
-                value={cpf}
-                onChange={handleCpfChange}
-                required
-              />
-              <Input
-                type="email"
-                placeholder="Email"
-                icon={Mail}
-                value={registerEmail}
-                onChange={(e) => setRegisterEmail(e.target.value)}
-                required
-              />
-              <Input
-                type="celular"
-                placeholder="Celular"
-                icon={Phone}
-                value={registerCelular}
-                onChange={(e) => setCelular(e.target.value)}
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Senha"
-                icon={Lock}
-                value={registerPassword}
-                onChange={(e) => setRegisterPassword(e.target.value)}
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Confirmar senha"
-                icon={Lock}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
+            </div>
 
-              <button type="submit" className="submit-btn" disabled={registerLoading}>
-                {registerLoading ? 'Criando...' : 'Criar conta'}
-              </button>
-            </form>
-          )}
+            <div className="form-bottom">
+              <Link to="/forgot-password" className="forgot-link">
+                Esqueceu a senha?
+              </Link>
+            </div>
+
+            <button type="submit" className="submit-btn" disabled={isLoading}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
         </div>
       </div>
 

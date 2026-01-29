@@ -65,3 +65,40 @@ a {
 button {
   font-family: inherit;
 }
+
+/* ================================
+   Scrollbar Personalizada
+   ================================ */
+
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--hf-bg-main);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--hf-primary) 0%, var(--hf-primary-dark) 100%);
+  border-radius: 10px;
+  border: 2px solid var(--hf-bg-main);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--hf-primary-hover) 0%, var(--hf-primary) 100%);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hf-primary) var(--hf-bg-main);
+}
+
+.required-star {
+  color: #d32f2f;
+  margin-left: 2px;
+  font-weight: bold;
+}

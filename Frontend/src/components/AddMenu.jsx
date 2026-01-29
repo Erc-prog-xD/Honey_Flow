@@ -18,7 +18,7 @@ const AddMenu = ({ onClose }) => {
                     >
                         Colmeia
                     </button>
-                    <button className="btn-menu-add btn-orange-add">Apiário</button>
+                    <button className="btn-menu-add btn-orange-add" onClick={() => { navigate('/cadastro-apiario'); onClose(); }}>Apiário</button>
                 </div>
             </div>
         </div>

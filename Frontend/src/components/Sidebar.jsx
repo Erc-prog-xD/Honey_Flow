@@ -1,119 +1,152 @@
-import { Archive, Hexagon, ChevronDown, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import {
-    buscarApiarios,
-    buscarColmeiasDoApiario
-} from '../services/apiarioService';
+import React, { useState, useEffect } from 'react';
+import { Archive, Hexagon, ChevronDown, ChevronRight, X } from 'lucide-react';
 import '../assets/css/Sidebar.css';
 
-/* ===========================
-   ITEM DO APIÁRIO
-=========================== */
-const SidebarItem = ({ apiario }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [colmeias, setColmeias] = useState([]);
-    const [loading, setLoading] = useState(false);
-
-    const toggleOpen = async () => {
-        const abrir = !isOpen;
-        setIsOpen(abrir);
-
-        if (abrir && colmeias.length === 0) {
-            setLoading(true);
-            try {
-                const response = await buscarColmeiasDoApiario(apiario.id);
-                console.log(response);
-                // response.data É o array
-                setColmeias(response.dados ?? []);
-            } catch (error) {
-                console.error('Erro ao buscar colmeias', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
+const SidebarItem = ({ title, children }) => {
+    const [isOpen, setIsOpen] = useState(true);
 
     return (
         <div className="sidebar-group">
-            <div className="sidebar-header" onClick={toggleOpen}>
+            <div className="sidebar-header" onClick={() => setIsOpen(!isOpen)}>
                 {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 <Archive className="icon-apiary" size={18} />
-                <span>Apiário Id#{apiario.id}</span>
+                <span>{title}</span>
             </div>
-
-            {isOpen && (
-                <div className="sidebar-content">
-                    {loading && <span>Carregando...</span>}
-
-                    {!loading && colmeias.length === 0 && (
-                        <span>Nenhuma colmeia</span>
-                    )}
-
-                    {!loading && colmeias.map(colmeia => (
-                        <HiveItem
-                            key={colmeia.Id}
-                            name={`Colmeia Ano: ${colmeia.anoColmeia}`}
-                        />
-                    ))}
-                </div>
-            )}
+            {isOpen && <div className="sidebar-content">{children}</div>}
         </div>
     );
 };
 
-/* ===========================
-   ITEM DA COLMEIA
-=========================== */
-const HiveItem = ({ name }) => (
-    <div className="hive-item">
+const HiveItem = ({ name, onClick }) => (
+    <div className="hive-item" onClick={onClick} style={{ cursor: 'pointer' }}>
         <Hexagon className="icon-hive" size={16} />
         <span>{name}</span>
     </div>
 );
 
-/* ===========================
-   SIDEBAR
-=========================== */
-const Sidebar = () => {
-    const [apiarios, setApiarios] = useState([]);
-    const [loading, setLoading] = useState(true);
+import { buscarApiarios, buscarColmeias } from '../services/apiarioService';
+
+const Sidebar = ({ onHiveSelect }) => {
+    const [apiaries, setApiaries] = useState([]);
+    const [hives, setHives] = useState([]);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        const carregarApiarios = async () => {
+        const loadData = async () => {
             try {
-                const response = await buscarApiarios();
+                const [apiariesData, hivesData] = await Promise.all([
+                    buscarApiarios(),
+                    buscarColmeias()
+                ]);
 
-                // GARANTIA DE ARRAY
-                console.log(apiarios);
-                setApiarios(response.dados ?? []);
+                // Tratamento de dados para Apiários
+                let safeApiaries = [];
+                if (Array.isArray(apiariesData)) {
+                    safeApiaries = apiariesData;
+                } else if (apiariesData?.dados && Array.isArray(apiariesData.dados)) {
+                    safeApiaries = apiariesData.dados;
+                }
+
+                // Tratamento de dados para Colmeias
+                let safeHives = [];
+                if (Array.isArray(hivesData)) {
+                    safeHives = hivesData;
+                } else if (hivesData?.dados && Array.isArray(hivesData.dados)) {
+                    safeHives = hivesData.dados;
+                } else if (Array.isArray(hivesData)) { // Caso buscarColmeias já retorne array achatado
+                    safeHives = hivesData;
+                }
+
+                // Filtra apiários desativados
+                const activeApiaries = safeApiaries.filter(ap => ap.atividade !== 0);
+
+                setApiaries(activeApiaries);
+                setHives(safeHives);
             } catch (error) {
-                console.error('Erro ao buscar apiários', error);
-                setApiarios([]);
-            } finally {
-                setLoading(false);
+                console.error("Erro ao carregar dados do Sidebar:", error);
             }
         };
 
-        carregarApiarios();
+        loadData();
     }, []);
 
-    if (loading) {
-        return <div className="sidebar-container">Carregando...</div>;
-    }
+    const handleHiveClick = (hive) => {
+        // Tenta usar coordenadas da colmeia ou do apiário vinculado
+        let lat = parseFloat(hive.lat || hive.latitude);
+        let lng = parseFloat(hive.lng || hive.longitude);
+
+        // Se a colmeia não tem coord, tenta achar o apiário
+        if (isNaN(lat) || isNaN(lng)) {
+            const apiary = apiaries.find(a => String(a.id) === String(hive.apiarioId || hive.apiario));
+            if (apiary) {
+                lat = parseFloat(apiary.coord_Y);
+                lng = parseFloat(apiary.coord_X);
+            }
+        }
+
+        if (onHiveSelect && !isNaN(lat) && !isNaN(lng)) {
+            onHiveSelect(lat, lng);
+        }
+        setIsMobileMenuOpen(false); // Fecha o menu ao selecionar
+    };
+
+    // Agrupa colmeias por apiário (apenas ativas)
+    const getHivesForApiary = (apiaryId) => {
+        return hives.filter(hive => String(hive.apiarioId || hive.apiario) === String(apiaryId) && hive.status === 1);
+    };
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const renderSidebarContent = () => (
+        <>
+            {apiaries.length === 0 ? (
+                <div className="sidebar-empty">Nenhum apiário cadastrado</div>
+            ) : (
+                apiaries.filter(a => getHivesForApiary(a.id).length > 0).map((apiario) => (
+                    <SidebarItem key={apiario.id} title={apiario.nomeApelido || `Apiário ${apiario.id}`}>
+                        {getHivesForApiary(apiario.id).map((hive, hiveIndex) => (
+                            <HiveItem
+                                key={hive.id}
+                                name={`Colmeia ${hiveIndex + 1}`}
+                                onClick={() => handleHiveClick(hive)}
+                            />
+                        ))}
+                    </SidebarItem>
+                ))
+            )}
+        </>
+    );
 
     return (
-        <div className="sidebar-container">
-            {apiarios.length === 0 && (
-                <span>Nenhum apiário encontrado</span>
+        <>
+            {/* Botão FAB mobile para apiários */}
+            <button className="sidebar-fab" onClick={toggleMobileMenu}>
+                <Hexagon size={24} />
+            </button>
+
+            {/* Overlay para fechar o menu */}
+            {isMobileMenuOpen && (
+                <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)} />
             )}
 
-            {apiarios.map(apiario => (
-                <SidebarItem
-                    key={apiario.id}
-                    apiario={apiario}
-                />
-            ))}
-        </div>
+            {/* Sidebar Desktop */}
+            <div className="sidebar-container sidebar-desktop">
+                {renderSidebarContent()}
+            </div>
+
+            {/* Sidebar Mobile (dropdown) */}
+            <div className={`sidebar-container sidebar-mobile ${isMobileMenuOpen ? 'open' : ''}`}>
+                <div className="sidebar-mobile-header">
+                    <span>Seus Apiários</span>
+                    <button className="sidebar-close-btn" onClick={() => setIsMobileMenuOpen(false)}>
+                        <X size={20} />
+                    </button>
+                </div>
+                {renderSidebarContent()}
+            </div>
+        </>
     );
 };
 
